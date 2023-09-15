@@ -1,3 +1,6 @@
+ThisBuild / version := "0.1.0"
+
+ThisBuild / scalaVersion := "2.13.11"
 
 lazy val `online-shop` =
   project
@@ -6,7 +9,6 @@ lazy val `online-shop` =
       name := "online-shop"
     )
     .aggregate(endpoints)
-
 
 lazy val endpoints = project
   .in(file("endpoints"))
