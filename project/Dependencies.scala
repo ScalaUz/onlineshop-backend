@@ -2,7 +2,7 @@ import sbt.*
 
 object Dependencies {
   object Versions {
-    lazy val circe = "0.14.3"
+    lazy val circe = "0.14.1"
     lazy val skunk = "0.6.0"
     lazy val http4s = "0.23.10"
     lazy val flyway = "9.16.0"
@@ -24,6 +24,8 @@ object Dependencies {
     lazy val `cats-tagless` = "0.14.0"
     lazy val derevo = "0.13.0"
     lazy val postgresql = "42.5.4"
+    lazy val sangria = "3.5.3"
+    lazy val `sangria-circe` = "1.3.2"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
@@ -71,8 +73,10 @@ object Dependencies {
       lazy val generic: ModuleID = circe("generic")
       lazy val parser: ModuleID = circe("parser")
       lazy val refined: ModuleID = circe("refined")
+      lazy val optics: ModuleID = circe("optics")
       lazy val `generic-extras`: ModuleID = circe("generic-extras")
-      override def all: Seq[ModuleID] = Seq(core, generic, parser, refined, `generic-extras`)
+      override def all: Seq[ModuleID] =
+        Seq(core, generic, parser, refined, optics, `generic-extras`)
     }
     object grpc extends LibGroup {
       private def muRpc(artifact: String): ModuleID =
@@ -124,6 +128,12 @@ object Dependencies {
       lazy val circe = http4s("circe")
       lazy val `blaze-server` = http4s("blaze-server")
       override def all: Seq[ModuleID] = Seq(dsl, server, client, circe)
+    }
+
+    object sangria extends LibGroup {
+      lazy val core = "org.sangria-graphql"  %% "sangria"       % Versions.sangria
+      lazy val circe = "org.sangria-graphql" %% "sangria-circe" % Versions.`sangria-circe`
+      override def all: Seq[ModuleID] = Seq(core, circe)
     }
 
     object flywaydb {
@@ -189,6 +199,14 @@ object Dependencies {
       }
       lazy val `http4s-jwt-auth` =
         "dev.profunktor" %% "http4s-jwt-auth" % Versions.`http4s-jwt-auth`
+    }
+  }
+
+  object uz {
+    object scala extends LibGroup {
+      lazy val common: ModuleID = "uz.scala" %% "common" % "1.0.1"
+      lazy val skunk: ModuleID = "uz.scala"  %% "skunk"  % "1.0.1"
+      override def all: Seq[ModuleID] = Seq(skunk)
     }
   }
 }

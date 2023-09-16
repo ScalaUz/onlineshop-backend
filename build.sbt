@@ -1,3 +1,5 @@
+import Dependencies.*
+
 ThisBuild / version := "0.1.0"
 
 ThisBuild / scalaVersion := "2.13.11"
@@ -9,6 +11,37 @@ lazy val `online-shop` =
       name := "online-shop"
     )
     .aggregate(endpoints)
+
+lazy val common =
+  project
+    .in(file("common"))
+    .settings(
+      name := "common"
+    )
+    .settings(
+      libraryDependencies ++=
+        Dependencies.io.circe.all ++
+          eu.timepit.refined.all ++
+          com.github.pureconfig.all ++
+          com.beachape.enumeratum.all ++
+          tf.tofu.derevo.all ++
+          Seq(
+            uz.scala.common,
+            org.typelevel.cats.core,
+            org.typelevel.cats.effect,
+            org.typelevel.log4cats,
+            ch.qos.logback,
+            dev.optics.monocle,
+            Dependencies.io.estatico.newtype,
+            Dependencies.io.github.jmcardon.`tsec-password`,
+          )
+    )
+
+lazy val supports = project
+  .in(file("supports"))
+  .settings(
+    name := "supports"
+  )
 
 lazy val endpoints = project
   .in(file("endpoints"))
