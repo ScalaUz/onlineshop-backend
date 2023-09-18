@@ -9,20 +9,25 @@ import chatassist.support.database.Migrations
 import eu.timepit.refined.pureconfig._
 import org.typelevel.log4cats.Logger
 import pureconfig.generic.auto.exportReader
-import sangria.marshalling.circe.CirceInputUnmarshaller
 import sangria.schema.Schema
 import uz.scala.skunk.SkunkSession
 
 import onlineshop.Repositories
 import onlineshop.api.graphql.GraphQL
-import onlineshop.api.graphql.schema.ProductsApi
 import onlineshop.http.{ Environment => ServerEnvironment }
 import onlineshop.utils.ConfigLoader
-case class Environment[F[_]: Async: Logger](
+case class Environment[F[_]: Async: Logger: Dispatcher](
     config: Config,
     repositories: Repositories[F],
-    graphQL: GraphQL[F],
   ) {
+  private val graphQL: GraphQL[F] =
+    GraphQL[F](
+      Schema(
+        query = new GraphQLEndpoints[F](this).queryType
+      ),
+      repositories.pure[F],
+    )
+
   lazy val toServer: ServerEnvironment[F] =
     ServerEnvironment(
       config = config.http,
@@ -30,14 +35,6 @@ case class Environment[F[_]: Async: Logger](
     )
 }
 object Environment {
-  private def graphQL[F[_]: Async: Logger: Dispatcher](repositories: Repositories[F]): GraphQL[F] =
-    GraphQL[F](
-      Schema(
-        query = new ProductsApi[F].queryType
-      ),
-      repositories.pure[F],
-    )
-
   def make[F[_]: Console: Logger](implicit F: Async[F]): Resource[F, Environment[F]] =
     for {
       config <- Resource.eval(ConfigLoader.load[F, Config])
@@ -47,6 +44,5 @@ object Environment {
         Repositories.make[F]
       }
       implicit0(dispatcher: Dispatcher[F]) <- Dispatcher.parallel[F]
-      graphql = graphQL(repositories)
-    } yield Environment[F](config, repositories, graphql)
+    } yield Environment[F](config, repositories)
 }

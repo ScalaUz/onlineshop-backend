@@ -10,19 +10,20 @@ import sangria.schema.Context
 import sangria.schema.ObjectType
 
 import onlineshop.api.graphql.GraphQLApi
-import onlineshop.domain.Product
-import onlineshop.repos.ProductsRepository
-class ProductsApi[F[_]: Monad](
-    productsRepo: ProductsRepository[F]
+import onlineshop.domain.Category
+import onlineshop.repos.CategoriesRepository
+
+class CategoriesApi[F[_]: Monad](
+    categoriesRepo: CategoriesRepository[F]
   )(implicit
     dispatcher: Dispatcher[F]
   ) extends GraphQLApi[F] {
   class Queries {
     @GraphQLField
-    def products(
+    def categories(
         ctx: Context[Ctx[F], Val]
-      ): Future[List[Product]] =
-      dispatcher.unsafeToFuture(productsRepo.fetchAll)
+      ): Future[List[Category]] =
+      dispatcher.unsafeToFuture(categoriesRepo.fetchAll)
   }
 
   override def queryType: ObjectType[Ctx[F], Val] =

@@ -1,21 +1,24 @@
-package onlineshop.api
-
-import onlineshop.Repositories
+package onlineshop.api.graphql
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.UUID
+
 import sangria.ast
 import sangria.macros.derive.deriveObjectType
 import sangria.schema.ListType
 import sangria.schema.ObjectType
 import sangria.schema.ScalarType
 import sangria.validation.ValueCoercionViolation
+
+import onlineshop.Repositories
+import onlineshop.domain.Category
 import onlineshop.domain.Product
 
-package object graphql {
+package object schema {
   type Ctx[F[_]] = Repositories[F]
+  type Val = Any
   private case object UUIDCoercionViolation extends ValueCoercionViolation("Invalid UUID format")
 
   private case object DateTimeCoercionViolation
@@ -72,4 +75,7 @@ package object graphql {
 
   implicit val ProductType: ObjectType[Unit, Product] = deriveObjectType[Unit, Product]()
   implicit val ProductListType: ListType[Product] = ListType(ProductType)
+
+  implicit val CategoryType: ObjectType[Unit, Category] = deriveObjectType[Unit, Category]()
+  implicit val CategoryListType: ListType[Category] = ListType(CategoryType)
 }
