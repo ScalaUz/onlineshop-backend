@@ -15,6 +15,7 @@ lazy val `online-shop` =
 lazy val common =
   project
     .in(file("common"))
+    .dependsOn(LocalProject("support_logback"))
     .settings(
       name := "common"
     )
