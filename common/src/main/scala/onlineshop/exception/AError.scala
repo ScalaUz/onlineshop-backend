@@ -26,6 +26,8 @@ object AError {
   object AuthError {
     final case class NoSuchUser(cause: String) extends AuthError
     final case class InvalidToken(cause: String) extends AuthError
+    final case class AuthenticationException(cause: String) extends AuthError
+    final case class AuthorizationException(cause: String) extends AuthError
     final case class PasswordDoesNotMatch(cause: String) extends AuthError
   }
 }

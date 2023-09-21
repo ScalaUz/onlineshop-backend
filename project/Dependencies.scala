@@ -22,16 +22,27 @@ object Dependencies {
     lazy val monocle = "3.2.0"
     lazy val redis4cats = "1.1.1"
     lazy val `cats-tagless` = "0.14.0"
+    lazy val mtl = "1.3.0"
     lazy val derevo = "0.13.0"
     lazy val postgresql = "42.5.4"
     lazy val sangria = "3.5.3"
     lazy val `sangria-circe` = "1.3.2"
+    lazy val caliban = "2.3.1"
+    lazy val `tapir-json-circe` = "1.2.11"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
   }
   object com {
     object github {
+      object caliban extends LibGroup {
+        private def repo(maybeArtifact: Option[String]): ModuleID =
+          "com.github.ghostdogpr" %% s"caliban${maybeArtifact.fold("")(artifact => s"-$artifact")}" % Versions.caliban
+        lazy val core: ModuleID = repo(None)
+        lazy val http4s: ModuleID = repo("http4s".some)
+        lazy val cats: ModuleID = repo("cats".some)
+        override def all: Seq[sbt.ModuleID] = Seq(core, http4s, cats)
+      }
       object pureconfig extends LibGroup {
         private def repo(artifact: String): ModuleID =
           "com.github.pureconfig" %% artifact % Versions.pureconfig
@@ -58,9 +69,11 @@ object Dependencies {
         private def sttp(artifact: String): ModuleID =
           "com.softwaremill.sttp.client3" %% artifact % Versions.sttp
 
+        lazy val `tapir-circe`: ModuleID =
+          "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Versions.`tapir-json-circe`
         lazy val circe: ModuleID = sttp("circe")
         lazy val `fs2-backend`: ModuleID = sttp("async-http-client-backend-fs2")
-        override def all: Seq[ModuleID] = Seq(circe, `fs2-backend`)
+        override def all: Seq[ModuleID] = Seq(circe, `fs2-backend`, `tapir-circe`)
       }
     }
   }
@@ -104,6 +117,7 @@ object Dependencies {
         lazy val core = "org.typelevel"           %% "cats-core"           % Versions.cats
         lazy val effect = "org.typelevel"         %% "cats-effect"         % Versions.`cats-effect`
         lazy val `cats-tagless` = "org.typelevel" %% "cats-tagless-macros" % Versions.`cats-tagless`
+        lazy val `mtl` = "org.typelevel"          %% "cats-mtl"            % Versions.mtl
       }
       lazy val log4cats = "org.typelevel" %% "log4cats-slf4j" % Versions.log4cats
     }

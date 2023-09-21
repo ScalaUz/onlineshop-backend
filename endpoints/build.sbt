@@ -23,9 +23,9 @@ lazy val `endpoints-core` =
     .in(file("02-core"))
     .settings(
       libraryDependencies ++=
-        org.sangria.all ++
           Seq(
-            dev.profunktor.`http4s-jwt-auth`
+            dev.profunktor.`http4s-jwt-auth`,
+            org.typelevel.cats.mtl,
           )
     )
     .dependsOn(
@@ -35,9 +35,14 @@ lazy val `endpoints-core` =
 lazy val `endpoints-api` =
   project
     .in(file("03-api"))
+    .settings(
+      libraryDependencies ++= com.github.caliban.all ++ Seq(
+        com.softwaremill.sttp.`tapir-circe`
+      )
+    )
     .dependsOn(
       LocalProject("support_services"),
-      `endpoints-core`
+      `endpoints-core`,
     )
 
 lazy val `endpoints-server` =
@@ -50,7 +55,7 @@ lazy val `endpoints-runner` =
     .in(file("05-runner"))
     .dependsOn(
       `endpoints-server`,
-      LocalProject("support_database")
+      LocalProject("support_database"),
     )
     .settings(
       libraryDependencies ++= Seq()

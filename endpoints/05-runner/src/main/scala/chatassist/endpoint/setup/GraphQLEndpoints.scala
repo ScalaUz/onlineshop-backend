@@ -1,18 +1,33 @@
 package chatassist.endpoint.setup
 
-import cats.Monad
-import cats.effect.std.Dispatcher
-import sangria.schema.ObjectType
+import caliban.GraphQL
+import caliban.RootResolver
+import caliban.graphQL
+import caliban.interop.cats.CatsInterop
+import caliban.schema.GenericSchema
+import cats.MonadThrow
+import izumi.reflect.TagK
 
-import onlineshop.api.graphql.GraphQLApi
-import onlineshop.api.graphql.schema._
+import onlineshop.Algebras
+import onlineshop.api.graphql.GraphQLContext
+import onlineshop.api.graphql.Queries
+import onlineshop.api.graphql.schema.ProductsQueries
+class GraphQLEndpoints[F[_]: TagK: MonadThrow](
+    algebras: Algebras[F]
+  )(implicit
+    interop: CatsInterop[F, GraphQLContext[F]]
+  ) {
+  private val Algebras(products) = algebras
 
-class GraphQLEndpoints[F[_]: Monad: Dispatcher](env: Environment[F]) {
-  private val apis: List[GraphQLApi[F]] =
-    List(
-      new ProductsApi[F](env.repositories.products),
-      new CategoriesApi[F](env.repositories.categories),
-    )
-  val queryType: ObjectType[Ctx[F], Val] =
-    ObjectType("Query", apis.flatMap(api => api.queryType.ownFields))
+  private def query: Queries[F] = Queries[F](
+    products = ProductsQueries.make[F](products)
+  )
+
+  def createGraphQL: GraphQL[GraphQLContext[F]] = {
+    implicit val schema: GenericSchema[GraphQLContext[F]] = new GenericSchema[GraphQLContext[F]] {}
+
+    import caliban.interop.cats.implicits._
+    import schema.auto._
+    graphQL(RootResolver(query))
+  }
 }
