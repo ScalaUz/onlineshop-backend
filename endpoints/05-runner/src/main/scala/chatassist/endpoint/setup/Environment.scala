@@ -13,11 +13,13 @@ import pureconfig.generic.auto.exportReader
 import uz.scala.skunk.SkunkSession
 import zio.Runtime
 import zio.ZEnvironment
+
 import onlineshop.Algebras
 import onlineshop.Repositories
+import onlineshop.algebras.Categories
 import onlineshop.algebras.Products
 import onlineshop.api.graphql.GraphQLContext
-import onlineshop.http.{Environment => ServerEnvironment}
+import onlineshop.http.{ Environment => ServerEnvironment }
 import onlineshop.utils.ConfigLoader
 case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
     config: Config,
@@ -25,9 +27,10 @@ case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
   )(implicit
     dispatcher: Dispatcher[F]
   ) {
-  val Repositories(productsRepository, categoriesRepository) = repositories
+  private val Repositories(productsRepository, categoriesRepository) = repositories
   val products: Products[F] = Products.make[F](productsRepository)
-  val algebras: Algebras[F] = Algebras[F](products)
+  val categories: Categories[F] = Categories.make[F](categoriesRepository)
+  val algebras: Algebras[F] = Algebras[F](products, categories)
 
   private lazy val graphQLContext: GraphQLContext[F] = GraphQLContext[F](algebras = algebras)
   implicit val runtime: Runtime[GraphQLContext[F]] =

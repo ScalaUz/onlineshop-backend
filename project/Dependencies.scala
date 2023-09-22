@@ -41,7 +41,8 @@ object Dependencies {
         lazy val core: ModuleID = repo(None)
         lazy val http4s: ModuleID = repo("http4s".some)
         lazy val cats: ModuleID = repo("cats".some)
-        override def all: Seq[sbt.ModuleID] = Seq(core, http4s, cats)
+        lazy val federation: ModuleID = repo("federation".some)
+        override def all: Seq[sbt.ModuleID] = Seq(core, http4s, cats, federation)
       }
       object pureconfig extends LibGroup {
         private def repo(artifact: String): ModuleID =
