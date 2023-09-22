@@ -5,11 +5,11 @@ import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
+import cats.effect.std.Dispatcher
 import cats.implicits.toTraverseOps
 import chatassist.endpoint.setup.Environment
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
 import onlineshop.HttpModule
 import onlineshop.api.graphql.GraphQLContext
 
@@ -19,7 +19,7 @@ object Main extends IOApp {
   private def runnable: Resource[IO, List[IO[ExitCode]]] =
     for {
       env <- Environment.make[IO]
-      implicit0(interop: CatsInterop[IO, GraphQLContext[IO]]) = env.interop
+
       httpModule <- HttpModule.make[IO](env.toServer)
     } yield List(httpModule)
 

@@ -1,4 +1,4 @@
-package chatassist.support.database
+package uz.scala.database
 
 import org.flywaydb.core.{ Flyway => Fway }
 

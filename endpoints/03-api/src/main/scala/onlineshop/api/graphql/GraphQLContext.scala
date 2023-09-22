@@ -1,9 +1,9 @@
 package onlineshop.api.graphql
 
 import onlineshop.Algebras
-import onlineshop.domain.AuthInfo
+import onlineshop.domain.AuthedUser
 
 case class GraphQLContext[F[_]](
-    authInfo: Option[AuthInfo] = None,
+    authInfo: Option[AuthedUser] = None,
     algebras: Algebras[F],
   )

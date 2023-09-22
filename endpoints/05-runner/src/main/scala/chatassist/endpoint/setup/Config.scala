@@ -1,12 +1,16 @@
 package chatassist.endpoint.setup
 
-import chatassist.support.database.MigrationsConfig
+import uz.scala.database.MigrationsConfig
 import uz.scala.http4s.HttpServerConfig
 import uz.scala.skunk.DataBaseConfig
+import onlineshop.auth.AuthConfig
+import uz.scala.redis.RedisConfig
 
 case class Config(
     http: HttpServerConfig,
     database: DataBaseConfig,
+    auth: AuthConfig,
+    redis: RedisConfig,
   ) {
   lazy val migrations: MigrationsConfig = MigrationsConfig(
     hostname = database.host.value,

@@ -1,4 +1,4 @@
-package chatassist.support.database
+package uz.scala.database
 
 case class MigrationsConfig(
     hostname: String,
