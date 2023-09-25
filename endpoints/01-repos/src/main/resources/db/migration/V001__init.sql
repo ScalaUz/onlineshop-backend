@@ -1,3 +1,27 @@
+CREATE TYPE ROLE AS ENUM ('tech_admin', 'moderator', 'customer');
+
 CREATE TABLE IF NOT EXISTS products (
   name VARCHAR NULL NULL
+);
+CREATE TABLE IF NOT EXISTS categories (
+  name VARCHAR NULL NULL
+);
+
+CREATE TABLE IF NOT EXISTS users(
+  id UUID PRIMARY KEY NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  firstname VARCHAR NOT NULL,
+  lastname VARCHAR NOT NULL,
+  role ROLE NOT NULL,
+  phone VARCHAR NOT NULL,
+  password VARCHAR NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS customers(
+  id UUID PRIMARY KEY NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  firstname VARCHAR NOT NULL,
+  lastname VARCHAR NOT NULL,
+  phone VARCHAR NOT NULL,
+  password VARCHAR NOT NULL
 );

@@ -1,17 +1,15 @@
 package chatassist.endpoint
 
-import caliban.interop.cats.CatsInterop
 import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
-import cats.effect.std.Dispatcher
 import cats.implicits.toTraverseOps
 import chatassist.endpoint.setup.Environment
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+
 import onlineshop.HttpModule
-import onlineshop.api.graphql.GraphQLContext
 
 object Main extends IOApp {
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]

@@ -8,8 +8,6 @@ import dev.profunktor.auth.AuthHeaders
 import dev.profunktor.auth.jwt.JwtAuth
 import dev.profunktor.auth.jwt.JwtSymmetricAuth
 import dev.profunktor.auth.jwt.JwtToken
-import io.circe.Decoder
-import io.circe.Encoder
 import org.http4s.Request
 import org.typelevel.log4cats.Logger
 import pdi.jwt.JwtAlgorithm
@@ -37,14 +35,14 @@ trait Auth[F[_], A] {
 }
 
 object Auth {
-  def make[F[_]: Sync, U <: AuthedUser: Encoder: Decoder](
+  def make[F[_]: Sync](
       config: AuthConfig,
-      findUser: Phone => F[Option[AccessCredentials[U]]],
+      findUser: Phone => F[Option[AccessCredentials[AuthedUser]]],
       redis: RedisClient[F],
     )(implicit
       logger: Logger[F]
-    ): Auth[F, U] =
-    new Auth[F, U] {
+    ): Auth[F, Option[AuthedUser]] =
+    new Auth[F, Option[AuthedUser]] {
       val tokens: Tokens[F] =
         Tokens.make[F](JwtExpire[F], config)
       val jwtAuth: JwtSymmetricAuth = JwtAuth.hmac(config.tokenKey.secret, JwtAlgorithm.HS256)
@@ -86,7 +84,7 @@ object Auth {
                 token =>
                   for {
                     _ <- OptionT(redis.get(AuthMiddleware.REFRESH_TOKEN_PREFIX + token))
-                      .semiflatMap(_.decodeAsF[F, U])
+                      .semiflatMap(_.decodeAsF[F, AuthedUser])
                       .semiflatMap(person => redis.del(person.phone))
                       .value
                     _ <- redis.del(AuthMiddleware.REFRESH_TOKEN_PREFIX + token.value)
@@ -100,7 +98,7 @@ object Auth {
               redis.get(AuthMiddleware.REFRESH_TOKEN_PREFIX + refreshToken.value),
               "Refresh token expired",
             )
-            .semiflatMap(_.decodeAsF[F, U])
+            .semiflatMap(_.decodeAsF[F, AuthedUser])
           _ <- EitherT.right[String](clearOldTokens(person.phone))
           tokens <- EitherT.right[String](createNewToken(person))
         } yield tokens
@@ -112,9 +110,9 @@ object Auth {
           .getBearerToken(request)
           .traverse_(token => redis.del(AuthMiddleware.ACCESS_TOKEN_PREFIX + token.value, phone))
 
-      private def createNewToken(person: U): F[AuthTokens] =
+      private def createNewToken(person: AuthedUser): F[AuthTokens] =
         for {
-          tokens <- tokens.createToken[U](person)
+          tokens <- tokens.createToken[AuthedUser](person)
           accessToken = AuthMiddleware.ACCESS_TOKEN_PREFIX + tokens.accessToken
           refreshToken = AuthMiddleware.REFRESH_TOKEN_PREFIX + tokens.refreshToken
           _ <- redis.put(accessToken, person, config.accessTokenExpiration.value)

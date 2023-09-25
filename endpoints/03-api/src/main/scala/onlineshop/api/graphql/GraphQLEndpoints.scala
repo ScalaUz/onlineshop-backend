@@ -14,6 +14,7 @@ import izumi.reflect.TagK
 import zio.Runtime
 import zio.ZEnvironment
 import zio.durationInt
+
 import onlineshop.Algebras
 import onlineshop.api.graphql.schema.CategoriesQueries
 import onlineshop.api.graphql.schema.ProductsQueries
@@ -44,6 +45,7 @@ class GraphQLEndpoints[F[_]: TagK: Async](
       maxDepth(50) @@
       timeout(3.seconds) @@
       printSlowQueries(500.millis) @@
+      authWrapper @@
       apolloCaching @@
       printErrors
   }
