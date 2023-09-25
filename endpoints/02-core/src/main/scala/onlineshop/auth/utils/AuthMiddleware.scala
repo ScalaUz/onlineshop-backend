@@ -1,6 +1,5 @@
 package onlineshop.auth.utils
 
-import cats.data.EitherT
 import cats.data.Kleisli
 import cats.data.OptionT
 import cats.effect.Sync
@@ -8,7 +7,6 @@ import cats.syntax.all._
 import dev.profunktor.auth.jwt._
 import org.http4s.Credentials.Token
 import org.http4s._
-import org.http4s.dsl.Http4sDsl
 import org.http4s.headers.Authorization
 import org.http4s.server
 import pdi.jwt._

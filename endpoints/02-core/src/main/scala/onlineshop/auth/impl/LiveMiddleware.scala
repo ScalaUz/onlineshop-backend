@@ -5,7 +5,6 @@ import cats.effect.Sync
 import cats.implicits._
 import dev.profunktor.auth.jwt.JwtAuth
 import dev.profunktor.auth.jwt.JwtToken
-import io.circe.Decoder
 import org.http4s.server
 import pdi.jwt.JwtAlgorithm
 import uz.scala.redis.RedisClient

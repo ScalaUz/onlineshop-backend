@@ -7,6 +7,9 @@ lazy val `endpoints-domain` = project
   .dependsOn(
     LocalProject("common")
   )
+  .settings(
+    libraryDependencies ++= com.github.caliban.all
+  )
 
 lazy val `endpoints-repos` =
   project
@@ -23,21 +26,21 @@ lazy val `endpoints-core` =
     .in(file("02-core"))
     .settings(
       libraryDependencies ++=
-          Seq(
-            dev.profunktor.`http4s-jwt-auth`,
-            org.typelevel.cats.mtl,
-          )
+        Seq(
+          dev.profunktor.`http4s-jwt-auth`,
+          org.typelevel.cats.mtl,
+        )
     )
     .dependsOn(
       `endpoints-repos`,
-      LocalProject("support_redis")
+      LocalProject("support_redis"),
     )
 
 lazy val `endpoints-api` =
   project
     .in(file("03-api"))
     .settings(
-      libraryDependencies ++= com.github.caliban.all ++ Seq(
+      libraryDependencies ++= Seq(
         com.softwaremill.sttp.`tapir-circe`
       )
     )

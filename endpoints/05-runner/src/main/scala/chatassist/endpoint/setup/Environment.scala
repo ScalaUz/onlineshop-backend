@@ -21,6 +21,7 @@ import onlineshop.Algebras
 import onlineshop.Phone
 import onlineshop.Repositories
 import onlineshop.algebras.Categories
+import onlineshop.algebras.Customers
 import onlineshop.algebras.Products
 import onlineshop.api.graphql.GraphQLEndpoints
 import onlineshop.auth.impl.Auth
@@ -39,12 +40,13 @@ case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
   private val Repositories(
     productsRepository,
     categoriesRepository,
-    customers,
-    users,
+    customersRepository,
+    usersRepository,
   ) = repositories
   val products: Products[F] = Products.make[F](productsRepository)
   val categories: Categories[F] = Categories.make[F](categoriesRepository)
-  val algebras: Algebras[F] = Algebras[F](products, categories)
+  val customers: Customers[F] = Customers.make[F](customersRepository)
+  val algebras: Algebras[F] = Algebras[F](products, categories, customers)
 
   lazy val toServer: ServerEnvironment[F] =
     ServerEnvironment(

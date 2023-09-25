@@ -35,10 +35,10 @@ package object graphql {
         ZQuery.fromZIO(check(directives)) *> query
       }
     }
-  def authWrapper[F[_]: TagK]: FieldWrapper[GraphQLContext[F]] =
+  def authWrapper[F[_]: TagK]: FieldWrapper[GraphQLContext] =
     checkDirectives(directives =>
       for {
-        currentRole <- ZIO.serviceWith[GraphQLContext[F]](
+        currentRole <- ZIO.serviceWith[GraphQLContext](
           _.authInfo.map(_.role)
         )
         restrictedRoles = directives
