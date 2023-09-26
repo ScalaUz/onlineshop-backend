@@ -25,10 +25,10 @@ private[repos] object UsersSql extends Sql[PersonId] {
           WHERE phone = $phone LIMIT 1""".query(accessCredentialsDecoder)
 
   val insert: Command[AccessCredentials[User]] =
-    sql"""INSERT INTO users VALUES ($id, $zonedDateTime, $nes, $nes, $role, $passwordHash)"""
+    sql"""INSERT INTO users VALUES ($id, $zonedDateTime, $nes, $nes, $role, $phone, $passwordHash)"""
       .command
       .contramap { (u: AccessCredentials[User]) =>
         u.data.id *: u.data.createdAt *: u.data.firstname *: u.data.lastname *: u.data.role *:
-          u.password *: EmptyTuple
+          u.data.phone *: u.password *: EmptyTuple
       }
 }

@@ -1,4 +1,4 @@
-package onlineshop.api.graphql.schema.users
+package onlineshop.api.graphql.schema.market
 
 import caliban.schema.Annotations.GQLName
 import onlineshop.algebras.Users
@@ -8,15 +8,15 @@ import onlineshop.domain.args.UserInfo
 import onlineshop.domain.enums.Role
 
 @GQLName("Users")
-case class UsersMutations[F[_]](
+case class MarketMutations[F[_]](
     @Access(Role.TechAdmin) create: UserInfo => F[PersonId]
   )
 
-object UsersMutations {
+object MarketMutations {
   def make[F[_]](
       usersAlgebra: Users[F]
-    ): UsersMutations[F] =
-    UsersMutations[F](
+    ): MarketMutations[F] =
+    MarketMutations[F](
       create = userInfo => usersAlgebra.create(userInfo)
     )
 }

@@ -1,10 +1,13 @@
 package onlineshop.api.graphql
 
 import caliban.CalibanError.ExecutionError
-import eu.timepit.refined.types.string.NonEmptyString
-import uz.scala.syntax.refined.commonSyntaxAutoRefineV
+import cats.Id
+import cats.data.EitherT
+import io.circe.Decoder
+import io.circe.DecodingFailure
+import io.circe.refined._
+import io.circe.syntax.EncoderOps
 
-import onlineshop.Phone
 import onlineshop.domain.PersonId
 import onlineshop.domain.Product
 import onlineshop.domain.args.CustomerInfo
@@ -18,17 +21,15 @@ trait GraphQLTypes {
   implicit val personIdSchema: Schema[GraphQLContext, PersonId] =
     Schema.uuidSchema.contramap(_.value)
 
-  implicit val nesArgBuilder: ArgBuilder[NonEmptyString] =
-    ArgBuilder.string.map[NonEmptyString](identity(_))
-
-  implicit val phoneArgBuilder: ArgBuilder[Phone] =
-    ArgBuilder.string.map[Phone](identity(_))
-  implicit val roleArgBuilder: ArgBuilder[Role] =
+  implicit def argBuilder[A: Decoder]: ArgBuilder[A] =
     ArgBuilder
       .string
-      .flatMap[Role] { s =>
-        Role.values.find(_.entryName == s).toRight(ExecutionError("Incorrect role entered"))
-      }
+      .flatMap[A](a =>
+        EitherT[Id, DecodingFailure, A](Decoder[A].decodeJson(a.asJson))
+          .leftMap(r => ExecutionError(r.message))
+          .value
+      )
+  implicit val roleArgBuilder: ArgBuilder[Role] = ArgBuilder.gen
 
   implicit val productArgsBuilder: ArgBuilder[ProductArgs] = ArgBuilder.gen
   implicit val userInfoArgsBuilder: ArgBuilder[UserInfo] = ArgBuilder.gen
