@@ -1,6 +1,7 @@
-package onlineshop.api.graphql.schema
+package onlineshop.api.graphql.schema.customers
 
 import caliban.schema.Annotations.GQLName
+
 import onlineshop.algebras.Customers
 import onlineshop.domain.PersonId
 import onlineshop.domain.args.CustomerInfo

@@ -6,7 +6,6 @@ import caliban.Value.StringValue
 import caliban.execution.FieldInfo
 import caliban.parsing.adt.Directive
 import caliban.wrappers.Wrapper.FieldWrapper
-import izumi.reflect.TagK
 import zio.ZIO
 import zio.query.ZQuery
 
@@ -35,7 +34,7 @@ package object graphql {
         ZQuery.fromZIO(check(directives)) *> query
       }
     }
-  def authWrapper[F[_]: TagK]: FieldWrapper[GraphQLContext] =
+  def authWrapper[F[_]]: FieldWrapper[GraphQLContext] =
     checkDirectives(directives =>
       for {
         currentRole <- ZIO.serviceWith[GraphQLContext](

@@ -1,4 +1,4 @@
-package onlineshop.api.graphql.schema
+package onlineshop.api.graphql.schema.categories
 
 import caliban.schema.Annotations.GQLDescription
 import caliban.schema.Annotations.GQLName

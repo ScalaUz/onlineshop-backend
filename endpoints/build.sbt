@@ -7,9 +7,6 @@ lazy val `endpoints-domain` = project
   .dependsOn(
     LocalProject("common")
   )
-  .settings(
-    libraryDependencies ++= com.github.caliban.all
-  )
 
 lazy val `endpoints-repos` =
   project
@@ -40,7 +37,7 @@ lazy val `endpoints-api` =
   project
     .in(file("03-api"))
     .settings(
-      libraryDependencies ++= Seq(
+      libraryDependencies ++= com.github.caliban.all ++ Seq(
         com.softwaremill.sttp.`tapir-circe`
       )
     )
