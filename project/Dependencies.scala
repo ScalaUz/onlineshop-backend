@@ -29,6 +29,7 @@ object Dependencies {
     lazy val `sangria-circe` = "1.3.2"
     lazy val caliban = "2.3.1"
     lazy val `tapir-json-circe` = "1.2.11"
+    lazy val squants = "1.8.3"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
@@ -121,6 +122,7 @@ object Dependencies {
         lazy val `mtl` = "org.typelevel"          %% "cats-mtl"            % Versions.mtl
       }
       lazy val log4cats = "org.typelevel" %% "log4cats-slf4j" % Versions.log4cats
+      lazy val squants = "org.typelevel" %% "squants" % Versions.squants
     }
     object tpolecat {
       object skunk extends LibGroup {

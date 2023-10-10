@@ -18,6 +18,9 @@ object ProductsQueries {
       productsAlgebra: Products[F]
     ): ProductsQueries[F] =
     ProductsQueries[F](
-      get = args => productsAlgebra.fetchAll
+      get = args => {
+        println(args)
+        productsAlgebra.fetchAll
+      }
     )
 }

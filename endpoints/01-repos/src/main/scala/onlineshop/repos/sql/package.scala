@@ -6,6 +6,8 @@ import eu.timepit.refined.types.string.NonEmptyString
 import skunk.Codec
 import skunk.codec.all._
 import skunk.data.Type
+import squants.Money
+import squants.market.USD
 import tsec.passwordhashers.PasswordHash
 import tsec.passwordhashers.jca.SCrypt
 import uz.scala.syntax.refined.commonSyntaxAutoRefineV
@@ -21,7 +23,7 @@ package object sql {
   val phone: Codec[Phone] = varchar.imap[Phone](identity(_))(_.value)
   val zonedDateTime: Codec[ZonedDateTime] = timestamptz.imap(_.toZonedDateTime)(_.toOffsetDateTime)
   val role: Codec[Role] = `enum`[Role](Role, Type("role"))
-
+  val price: Codec[Money] = numeric.imap[Money](money => USD(money))(_.amount)
   val passwordHash: Codec[PasswordHash[SCrypt]] =
     varchar.imap[PasswordHash[SCrypt]](PasswordHash[SCrypt])(identity)
 }

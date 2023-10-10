@@ -1,12 +1,14 @@
 package onlineshop.repos.sql
 
 import skunk._
-import skunk.codec.all.varchar
 import skunk.implicits._
 
 import onlineshop.domain.Product
-private[repos] object ProductsSql {
-  private val codec: Codec[Product] = varchar.to[Product]
+import onlineshop.domain.ProductId
+private[repos] object ProductsSql extends Sql[ProductId] {
+  private val codec: Codec[Product] =
+    (id *: zonedDateTime *: nes *: nes *: price *: nes *: nes *: nes *: BrandsSql.id *: CategoriesSql.id)
+      .to[Product]
   val insert: Command[Product] =
     sql"""INSERT INTO products VALUES ($codec)""".command
 

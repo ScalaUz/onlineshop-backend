@@ -4,6 +4,11 @@ name := "endpoints"
 
 lazy val `endpoints-domain` = project
   .in(file("00-domain"))
+  .settings(
+    libraryDependencies ++= Seq(
+      org.typelevel.squants
+    )
+  )
   .dependsOn(
     LocalProject("common")
   )
@@ -37,9 +42,10 @@ lazy val `endpoints-api` =
   project
     .in(file("03-api"))
     .settings(
-      libraryDependencies ++= com.github.caliban.all ++ Seq(
-        com.softwaremill.sttp.`tapir-circe`
-      )
+      libraryDependencies ++= com.github.caliban.all ++
+        Seq(
+          com.softwaremill.sttp.`tapir-circe`
+        )
     )
     .dependsOn(
       LocalProject("support_services"),

@@ -2,13 +2,13 @@ package onlineshop.api.graphql.schema.categories
 
 import caliban.schema.Annotations.GQLDescription
 import caliban.schema.Annotations.GQLName
-
 import onlineshop.algebras.Categories
 import onlineshop.domain.Category
+import zio.query.ZQuery
 @GQLName("Categories")
 case class CategoriesQueries[F[_]](
     @GQLDescription("Fetch all category")
-    get: F[List[Category]]
+    get: ZQuery[Any, Nothing, F[List[Category]]],
   )
 
 object CategoriesQueries {
@@ -16,6 +16,6 @@ object CategoriesQueries {
       categoriesAlgebra: Categories[F]
     ): CategoriesQueries[F] =
     CategoriesQueries[F](
-      get = categoriesAlgebra.fetchAll
+      get = ZQuery.succeed(categoriesAlgebra.fetchAll)
     )
 }

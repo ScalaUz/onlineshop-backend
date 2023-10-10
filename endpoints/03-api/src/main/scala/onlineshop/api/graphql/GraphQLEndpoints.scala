@@ -7,6 +7,7 @@ import caliban.interop.cats.CatsInterop
 import caliban.interop.cats.implicits._
 import caliban.schema.GenericSchema
 import caliban.wrappers.ApolloCaching.apolloCaching
+import caliban.wrappers.DeferSupport
 import caliban.wrappers.Wrappers._
 import cats.effect.Async
 import cats.effect.std.Dispatcher
@@ -40,6 +41,7 @@ class GraphQLEndpoints[F[_]: Async](
       timeout(3.seconds) @@
       printSlowQueries(500.millis) @@
       authWrapper @@
+      DeferSupport.defer @@
       apolloCaching @@
       printErrors
   }

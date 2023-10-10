@@ -4,5 +4,5 @@ import io.circe.generic.JsonCodec
 
 @JsonCodec
 case class ProductArgs(
-    name: Option[String]
+    name: Option[String] = None
   )

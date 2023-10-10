@@ -5,8 +5,8 @@ import io.circe.generic.JsonCodec
 import io.circe.refined._
 
 @JsonCodec
-case class Category(
-    id: CategoryId,
+case class Country(
+    id: CountryId,
     nameUz: NonEmptyString,
     nameRu: NonEmptyString,
     nameEn: NonEmptyString,
