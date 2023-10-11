@@ -1,5 +1,6 @@
 package onlineshop.api.graphql.schema.customers
 
+import caliban.schema.Annotations.GQLDescription
 import caliban.schema.Annotations.GQLName
 
 import onlineshop.algebras.Customers
@@ -8,6 +9,7 @@ import onlineshop.domain.args.CustomerInfo
 
 @GQLName("Customer")
 case class CustomerMutations[F[_]](
+    @GQLDescription("Create customer")
     create: CustomerInfo => F[PersonId]
   )
 

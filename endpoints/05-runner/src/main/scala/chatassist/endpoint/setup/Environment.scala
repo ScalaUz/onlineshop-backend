@@ -20,6 +20,7 @@ import uz.scala.skunk.SkunkSession
 import onlineshop.Algebras
 import onlineshop.Phone
 import onlineshop.Repositories
+import onlineshop.algebras.Brands
 import onlineshop.algebras.Categories
 import onlineshop.algebras.Customers
 import onlineshop.algebras.Products
@@ -41,14 +42,16 @@ case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
   private val Repositories(
     productsRepository,
     categoriesRepository,
+    brandsRepository,
     customersRepository,
     usersRepository,
   ) = repositories
+  private val brands: Brands[F] = Brands.make[F](brandsRepository)
   private val products: Products[F] = Products.make[F](productsRepository)
   private val categories: Categories[F] = Categories.make[F](categoriesRepository)
   private val customers: Customers[F] = Customers.make[F](customersRepository)
   private val users: Users[F] = Users.make[F](usersRepository)
-  private val algebras: Algebras[F] = Algebras[F](products, categories, customers, users)
+  private val algebras: Algebras[F] = Algebras[F](brands, products, categories, customers, users)
 
   lazy val toServer: ServerEnvironment[F] =
     ServerEnvironment(

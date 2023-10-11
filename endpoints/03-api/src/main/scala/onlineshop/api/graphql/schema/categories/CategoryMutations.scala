@@ -1,13 +1,13 @@
 package onlineshop.api.graphql.schema.categories
 
-import caliban.schema.Annotations.GQLName
-
+import caliban.schema.Annotations.{GQLDescription, GQLName}
 import onlineshop.algebras.Categories
 import onlineshop.domain.CategoryId
 import onlineshop.domain.args.CategoryInput
 
-@GQLName("Categories")
+@GQLName("CategoryMutations")
 case class CategoryMutations[F[_]](
+    @GQLDescription("Create category")
     create: CategoryInput => F[CategoryId]
   )
 

@@ -7,7 +7,7 @@ import onlineshop.domain.Brand
 import onlineshop.domain.BrandId
 
 private[repos] object BrandsSql extends Sql[BrandId] {
-  private val codec: Codec[Brand] = (id *: nes).to[Brand]
+  private val codec: Codec[Brand] = (id *: nes *: AssetsSql.id).to[Brand]
   val insert: Command[Brand] =
     sql"""INSERT INTO brands VALUES ($codec)""".command
 

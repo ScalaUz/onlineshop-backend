@@ -4,7 +4,7 @@ import caliban.schema.Annotations.GQLDescription
 import caliban.schema.Annotations.GQLName
 import onlineshop.algebras.Categories
 import onlineshop.domain.Category
-@GQLName("Categories")
+@GQLName("CategoriesQueries")
 case class CategoriesQueries[F[_]](
     @GQLDescription("Fetch all category")
     get: F[List[Category]]

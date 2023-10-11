@@ -8,4 +8,5 @@ import io.circe.refined._
 case class Brand(
     id: BrandId,
     name: NonEmptyString,
+    assetId: AssetId,
   )
