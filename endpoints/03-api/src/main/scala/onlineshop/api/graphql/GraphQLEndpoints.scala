@@ -5,7 +5,6 @@ import caliban.RootResolver
 import caliban.graphQL
 import caliban.interop.cats.CatsInterop
 import caliban.interop.cats.implicits._
-import caliban.schema.GenericSchema
 import caliban.wrappers.ApolloCaching.apolloCaching
 import caliban.wrappers.DeferSupport
 import caliban.wrappers.Wrappers._
@@ -24,6 +23,8 @@ class GraphQLEndpoints[F[_]: Async](
   )(implicit
     dispatcher: Dispatcher[F]
   ) extends GraphQLTypes {
+  import auto._
+
   private lazy val graphQLContext: GraphQLContext =
     GraphQLContext(authInfo = maybeUser)
   implicit val runtime: Runtime[GraphQLContext] =
@@ -33,9 +34,7 @@ class GraphQLEndpoints[F[_]: Async](
   private val query: Queries[F] = Queries.make[F](algebras)
   private val mutations: Mutations[F] = Mutations.make[F](algebras)
 
-  def createGraphQL: GraphQL[GraphQLContext] = {
-    implicit val schema: GenericSchema[GraphQLContext] = new GenericSchema[GraphQLContext] {}
-    import schema.auto._
+  def createGraphQL: GraphQL[GraphQLContext] =
     graphQL(RootResolver(query, mutations)) @@
       maxDepth(50) @@
       timeout(3.seconds) @@
@@ -44,5 +43,4 @@ class GraphQLEndpoints[F[_]: Async](
       DeferSupport.defer @@
       apolloCaching @@
       printErrors
-  }
 }

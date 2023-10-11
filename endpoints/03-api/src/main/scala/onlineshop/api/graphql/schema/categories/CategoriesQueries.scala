@@ -4,11 +4,10 @@ import caliban.schema.Annotations.GQLDescription
 import caliban.schema.Annotations.GQLName
 import onlineshop.algebras.Categories
 import onlineshop.domain.Category
-import zio.query.ZQuery
 @GQLName("Categories")
 case class CategoriesQueries[F[_]](
     @GQLDescription("Fetch all category")
-    get: ZQuery[Any, Nothing, F[List[Category]]],
+    get: F[List[Category]]
   )
 
 object CategoriesQueries {
@@ -16,6 +15,6 @@ object CategoriesQueries {
       categoriesAlgebra: Categories[F]
     ): CategoriesQueries[F] =
     CategoriesQueries[F](
-      get = ZQuery.succeed(categoriesAlgebra.fetchAll)
+      get = categoriesAlgebra.fetchAll
     )
 }
