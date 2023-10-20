@@ -17,7 +17,7 @@ import onlineshop.api.graphql.GraphQLEndpoints
 import onlineshop.domain.Asset.AssetInfo
 import onlineshop.domain.AuthedUser
 
-final case class GraphQLRoutes[F[_]: Async](
+final case class RootRoutes[F[_]: Async](
     graphQL: Option[AuthedUser] => GraphQLEndpoints[F],
     assets: Assets[F],
   ) extends Routes[F, Option[AuthedUser]] {
