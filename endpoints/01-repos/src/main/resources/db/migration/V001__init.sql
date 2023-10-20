@@ -121,6 +121,13 @@ VALUES
   ('a6e77914-ea06-4ef9-bc0e-8156f66a8ec0', '3d9ecd13-4148-4354-bb3a-c51b1d533e51', 'Urganch', 'Урганч', 'Urgench'),
   ('a0d6abfb-8233-4eb2-9686-66e49cc8b28a', '3d9ecd13-4148-4354-bb3a-c51b1d533e51', 'Xonobod', 'Хонабод', 'Khonobod');
 
+CREATE TABLE IF NOT EXISTS assets(
+  id UUID PRIMARY KEY NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  s3_key VARCHAR NOT NULL,
+  public BOOLEAN NOT NULL,
+  filename VARCHAR NULL
+);
 
 CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY NOT NULL,
@@ -128,9 +135,11 @@ CREATE TABLE IF NOT EXISTS categories (
   name_ru VARCHAR NULL NULL,
   name_en VARCHAR NULL NULL
 );
+
 CREATE TABLE IF NOT EXISTS brands (
   id UUID PRIMARY KEY NOT NULL,
-  name VARCHAR NULL NULL
+  name VARCHAR NULL NULL,
+  asset_id UUID NOT NULL CONSTRAINT fk_assets REFERENCES assets (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS products (
