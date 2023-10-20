@@ -38,6 +38,12 @@ lazy val common =
           )
     )
 
+lazy val integrations = project
+  .in(file("integrations"))
+  .settings(
+    name := "integrations"
+  )
+
 lazy val supports = project
   .in(file("supports"))
   .settings(

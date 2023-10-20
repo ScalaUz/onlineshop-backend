@@ -30,11 +30,27 @@ object Dependencies {
     lazy val caliban = "2.3.1"
     lazy val `tapir-json-circe` = "1.2.11"
     lazy val squants = "1.8.3"
+    lazy val awsSdk = "1.12.111"
+    lazy val awsSoftwareS3 = "2.20.68"
+    lazy val guava = "31.0.1-jre"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
   }
   object com {
+    object amazonaws extends LibGroup {
+      private def awsJdk(artifact: String): ModuleID =
+        "com.amazonaws" % artifact % Versions.awsSdk
+
+      lazy val awsCore: ModuleID = awsJdk("aws-java-sdk-core")
+      lazy val awsS3: ModuleID = awsJdk("aws-java-sdk-s3")
+      val awsSoftwareS3: ModuleID = "software.amazon.awssdk" % "s3" % Versions.awsSoftwareS3
+
+      override def all: Seq[ModuleID] = Seq(awsCore, awsS3, awsSoftwareS3)
+    }
+    object google {
+      lazy val guava = "com.google.guava" % "guava" % Versions.guava
+    }
     object github {
       object caliban extends LibGroup {
         private def repo(maybeArtifact: Option[String]): ModuleID =
@@ -122,7 +138,7 @@ object Dependencies {
         lazy val `mtl` = "org.typelevel"          %% "cats-mtl"            % Versions.mtl
       }
       lazy val log4cats = "org.typelevel" %% "log4cats-slf4j" % Versions.log4cats
-      lazy val squants = "org.typelevel" %% "squants" % Versions.squants
+      lazy val squants = "org.typelevel"  %% "squants"        % Versions.squants
     }
     object tpolecat {
       object skunk extends LibGroup {

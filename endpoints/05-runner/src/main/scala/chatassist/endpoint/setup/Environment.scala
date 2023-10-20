@@ -13,6 +13,7 @@ import izumi.reflect.TagK
 import org.http4s.server
 import org.typelevel.log4cats.Logger
 import pureconfig.generic.auto.exportReader
+import uz.scala.aws.s3.S3Client
 import uz.scala.database.Migrations
 import uz.scala.redis.RedisClient
 import uz.scala.skunk.SkunkSession
@@ -20,6 +21,7 @@ import uz.scala.skunk.SkunkSession
 import onlineshop.Algebras
 import onlineshop.Phone
 import onlineshop.Repositories
+import onlineshop.algebras.Assets
 import onlineshop.algebras.Brands
 import onlineshop.algebras.Categories
 import onlineshop.algebras.Customers
@@ -38,6 +40,7 @@ case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
     repositories: Repositories[F],
     auth: Auth[F, Option[AuthedUser]],
     middleware: server.AuthMiddleware[F, Option[AuthedUser]],
+    s3Client: S3Client[F],
   ) {
   private val Repositories(
     productsRepository,
@@ -45,12 +48,14 @@ case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
     brandsRepository,
     customersRepository,
     usersRepository,
+    assetsRepository,
   ) = repositories
   private val brands: Brands[F] = Brands.make[F](brandsRepository)
   private val products: Products[F] = Products.make[F](productsRepository)
   private val categories: Categories[F] = Categories.make[F](categoriesRepository)
   private val customers: Customers[F] = Customers.make[F](customersRepository)
   private val users: Users[F] = Users.make[F](usersRepository)
+  private val assets: Assets[F] = Assets.make[F](assetsRepository, s3Client)
   private val algebras: Algebras[F] = Algebras[F](brands, products, categories, customers, users)
 
   lazy val toServer: ServerEnvironment[F] =
@@ -59,6 +64,7 @@ case class Environment[F[_]: TagK: Async: Logger: Dispatcher](
       graphQL = maybeUser => new GraphQLEndpoints[F](algebras, maybeUser),
       middleware = middleware,
       auth = auth,
+      algebras = ServerEnvironment.Algebras(assets),
     )
 }
 object Environment {
@@ -84,5 +90,6 @@ object Environment {
       implicit0(dispatcher: Dispatcher[F]) <- Dispatcher.parallel[F]
       middleware = LiveMiddleware.make[F](config.auth, redis)
       auth = Auth.make[F](config.auth, findUser(repositories), redis)
-    } yield Environment[F](config, repositories, auth, middleware)
+      s3Client <- S3Client.resource(config.awsConfig)
+    } yield Environment[F](config, repositories, auth, middleware, s3Client)
 }

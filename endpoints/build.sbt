@@ -10,7 +10,8 @@ lazy val `endpoints-domain` = project
     )
   )
   .dependsOn(
-    LocalProject("common")
+    LocalProject("common"),
+    LocalProject("support_services"),
   )
 
 lazy val `endpoints-repos` =
@@ -36,6 +37,7 @@ lazy val `endpoints-core` =
     .dependsOn(
       `endpoints-repos`,
       LocalProject("support_redis"),
+      LocalProject("integration_aws-s3"),
     )
 
 lazy val `endpoints-api` =
@@ -48,8 +50,7 @@ lazy val `endpoints-api` =
         )
     )
     .dependsOn(
-      LocalProject("support_services"),
-      `endpoints-core`,
+      `endpoints-core`
     )
 
 lazy val `endpoints-server` =

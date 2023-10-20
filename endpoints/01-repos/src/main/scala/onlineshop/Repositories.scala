@@ -4,11 +4,7 @@ import cats.effect.Async
 import cats.effect.Resource
 import skunk.Session
 
-import onlineshop.repos.BrandsRepository
-import onlineshop.repos.CategoriesRepository
-import onlineshop.repos.CustomersRepository
-import onlineshop.repos.ProductsRepository
-import onlineshop.repos.UsersRepository
+import onlineshop.repos._
 
 case class Repositories[F[_]](
     products: ProductsRepository[F],
@@ -16,6 +12,7 @@ case class Repositories[F[_]](
     brands: BrandsRepository[F],
     customers: CustomersRepository[F],
     users: UsersRepository[F],
+    assets: AssetsRepository[F],
   )
 object Repositories {
   def make[F[_]: Async](
@@ -28,5 +25,6 @@ object Repositories {
       brands = BrandsRepository.make[F],
       customers = CustomersRepository.make[F],
       users = UsersRepository.make[F],
+      assets = AssetsRepository.make[F],
     )
 }

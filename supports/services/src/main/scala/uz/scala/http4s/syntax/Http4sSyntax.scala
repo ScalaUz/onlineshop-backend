@@ -5,11 +5,11 @@ import java.time.ZonedDateTime
 import scala.concurrent.duration.DurationInt
 
 import cats.MonadThrow
-import cats.effect.Sync
 import cats.effect.Temporal
 import cats.effect.kernel.Concurrent
 import cats.implicits._
 import eu.timepit.refined.types.string.NonEmptyString
+import fs2.RaiseThrowable
 import io.circe.Decoder
 import io.circe.Encoder
 import io.circe.syntax.EncoderOps
@@ -110,14 +110,20 @@ final class PartOps[F[_]](private val parts: Vector[Part[F]]) {
 
   def textParts: Vector[Part[F]] = parts.filterNot(filterFileTypes)
 
-  def convert[A](implicit mapper: MapConvert[F, ValidationResult[A]], F: Sync[F]): F[A] =
+  def convert[A](
+      implicit
+      F: MonadThrow[F],
+      mapper: MapConvert[ValidationResult[A]],
+      compiler: fs2.Compiler[F, F],
+      RT: RaiseThrowable[F],
+    ): F[A] =
     for {
       collectKV <- textParts.traverse { part =>
         part.bodyText.compile.foldMonoid.map(part.name.get -> _)
       }
-      entity <- mapper.fromMap(collectKV.toMap)
+      entity = mapper.fromMap(collectKV.toMap)
       validEntity <- entity.fold(
-        error => F.raiseError[A](MultipartDecodeError(error.toList.mkString(" | "))),
+        error => F.raiseError[A](MultipartDecodeError(error.toList.mkString("\n"))),
         success => success.pure[F],
       )
     } yield validEntity

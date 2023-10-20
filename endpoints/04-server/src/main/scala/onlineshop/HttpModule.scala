@@ -11,7 +11,8 @@ import org.http4s.server.Router
 import org.typelevel.log4cats.Logger
 import uz.scala.http4s.HttpServer
 import uz.scala.http4s.utils.Routes
-import onlineshop.api.routes.{AuthRoutes, GraphQLRoutes}
+
+import onlineshop.api.routes._
 import onlineshop.domain.AuthedUser
 import onlineshop.http.Environment
 
@@ -21,8 +22,8 @@ object HttpModule {
     ): NonEmptyList[HttpRoutes[F]] =
     NonEmptyList
       .of[Routes[F, Option[AuthedUser]]](
-        new GraphQLRoutes[F](env.graphQL),
-        new AuthRoutes[F](env.auth)
+        new GraphQLRoutes[F](env.graphQL, env.algebras.assets),
+        new AuthRoutes[F](env.auth),
       )
       .map { r =>
         Router(
