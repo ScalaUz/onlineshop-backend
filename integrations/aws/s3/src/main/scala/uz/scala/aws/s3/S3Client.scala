@@ -1,8 +1,7 @@
 package uz.scala.aws.s3
 
 import java.net.URL
-import java.time.LocalDateTime
-import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.Date
 
 import scala.jdk.CollectionConverters._
@@ -12,16 +11,16 @@ import cats.effect.Resource
 import cats.effect.Sync
 import cats.implicits.catsSyntaxApplicativeId
 import cats.implicits.catsSyntaxFlatMapOps
+import cats.implicits.catsSyntaxOptionId
+import com.amazonaws.ClientConfiguration
 import com.amazonaws.HttpMethod
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
+import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.services.s3.AmazonS3
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.Headers
 import com.amazonaws.services.s3.model._
-import com.amazonaws.services.s3.transfer._
-import com.google.common.io.ByteSource
-import com.google.common.io.ByteStreams
 import fs2._
 import uz.scala.syntax.refined._
 trait S3Client[F[_]] {
@@ -39,54 +38,52 @@ trait S3Client[F[_]] {
 
   def uploadFileMultipart(key: String, chunkSize: Int = defaultChunkSize): Pipe[F, Byte, String]
 
-  def objectUrl(key: String): F[URL]
+  def generatePresignedUrl(key: String, publicRead: Boolean = false): F[URL]
+
+  def generateUrl(key: String): F[URL]
 }
 
 object S3Client {
-  private[this] def makeAmazonS3(awsConfig: AWSConfig): AmazonS3 = {
-    val credentials = new BasicAWSCredentials(awsConfig.accessKey.value, awsConfig.secretKey.value)
-    val credentialsProvider = new AWSStaticCredentialsProvider(credentials)
-    AmazonS3ClientBuilder
-      .standard()
-      .withEndpointConfiguration(
-        new EndpointConfiguration(awsConfig.serviceEndpoint, awsConfig.signingRegion)
-      )
-      .withCredentials(credentialsProvider)
-      .build()
-  }
-
   def resource[F[_]: Async](awsConfig: AWSConfig): Resource[F, S3Client[F]] =
     for {
-      transferManager <- Resource.make(acquireTransferManager[F](awsConfig))(shutdown[F])
-    } yield new S3ClientImpl[F](awsConfig, transferManager)
+      s3 <- Resource.eval(make[F](awsConfig))
+    } yield new S3ClientImpl[F](awsConfig, s3)
 
-  def stream[F[_]: Async](awsConfig: AWSConfig): Stream[F, S3Client[F]] =
-    Stream.resource(S3Client.resource[F](awsConfig))
-
-  private def acquireTransferManager[F[_]](
+  def make[F[_]](
       awsConfig: AWSConfig
     )(implicit
       F: Sync[F]
-    ): F[TransferManager] =
-    F.delay(TransferManagerBuilder.standard().withS3Client(makeAmazonS3(awsConfig)).build())
+    ): F[AmazonS3] =
+    F.delay {
+      val clientConfiguration = new ClientConfiguration()
+      clientConfiguration.setSignerOverride("AWSS3V4SignerType")
 
-  private def shutdown[F[_]](tm: TransferManager)(implicit F: Sync[F]): F[Unit] =
-    F.delay(tm.shutdownNow())
+      AmazonS3ClientBuilder
+        .standard()
+        .withEndpointConfiguration(
+          new AwsClientBuilder.EndpointConfiguration(
+            awsConfig.serviceEndpoint,
+            awsConfig.signingRegion,
+          )
+        )
+        .withPathStyleAccessEnabled(true)
+        .withCredentials(
+          new AWSStaticCredentialsProvider(
+            new BasicAWSCredentials(awsConfig.accessKey.value, awsConfig.secretKey.value)
+          )
+        )
+        .withClientConfiguration(clientConfiguration)
+        .build()
+    }
 
-  class S3ClientImpl[F[_]: Async] private[s3] (
+  private class S3ClientImpl[F[_]: Async] private[s3] (
       awsConfig: AWSConfig,
-      transferManager: TransferManager,
+      s3: AmazonS3,
     )(implicit
       F: Sync[F]
     ) extends S3Client[F] {
-    private[this] def makeMetadata(contentLength: Long): ObjectMetadata = {
-      val metadata = new ObjectMetadata()
-      metadata.setContentLength(contentLength)
-      metadata
-    }
-
     private def expireTime(): Date =
-      Date.from(LocalDateTime.now().plusSeconds(60).atZone(ZoneId.systemDefault).toInstant)
+      Date.from(ZonedDateTime.now().plusDays(1).toInstant)
 
     /** Uploads a file in a single request. Suitable for small files.
       *
@@ -97,18 +94,16 @@ object S3Client {
       (s: Stream[F, Byte]) =>
         for {
           is <- s.through(io.toInputStream)
-          bytes = ByteStreams.toByteArray(is)
-          _ = is.close()
-          byteSource = ByteSource.wrap(bytes)
-          _ = transferManager.getAmazonS3Client.putObject {
+          metadata = new ObjectMetadata()
+          _ = metadata.setContentLength(is.available().toLong)
+          _ = s3.putObject {
             val uploadRequest =
               new PutObjectRequest(
                 awsConfig.bucketName,
                 key,
-                byteSource.openStream(),
-                makeMetadata(byteSource.size()),
-              )
-            uploadRequest.getRequestClientOptions.setReadLimit(1024 * 1024 * 5)
+                is,
+                metadata,
+              ).withCannedAcl(CannedAccessControlList.Private)
             uploadRequest
           }
         } yield ()
@@ -132,8 +127,7 @@ object S3Client {
 
       val initiateMultipartUpload: F[String] =
         F.delay(
-          transferManager
-            .getAmazonS3Client
+          s3
             .initiateMultipartUpload(
               new InitiateMultipartUploadRequest(awsConfig.bucketName, key)
             )
@@ -145,7 +139,7 @@ object S3Client {
           case (c, i) =>
             for {
               is <- fs2.Stream.chunk(c).through(io.toInputStream)
-              partReq = transferManager.getAmazonS3Client.uploadPart {
+              partReq = s3.uploadPart {
                 val uploadPartRequest = new UploadPartRequest()
                 uploadPartRequest.withBucketName(awsConfig.bucketName)
                 uploadPartRequest.withKey(key)
@@ -160,19 +154,15 @@ object S3Client {
 
       def completeUpload(uploadId: String): Pipe[F, List[PartETag], String] =
         _.evalMap { tags =>
-          transferManager
-            .getAmazonS3Client
-            .completeMultipartUpload(
-              new CompleteMultipartUploadRequest(awsConfig.bucketName, key, uploadId, tags.asJava)
-            )
-            .getETag
+          s3.completeMultipartUpload(
+            new CompleteMultipartUploadRequest(awsConfig.bucketName, key, uploadId, tags.asJava)
+          ).getETag
             .pure[F]
         }
 
       def cancelUpload(uploadId: String) =
         F.delay(
-          transferManager
-            .getAmazonS3Client
+          s3
             .abortMultipartUpload(
               new AbortMultipartUploadRequest(awsConfig.bucketName, key, uploadId)
             )
@@ -200,7 +190,7 @@ object S3Client {
     override def downloadObject(key: String): Stream[F, Byte] =
       io.readInputStream(
         Sync[F].delay(
-          transferManager.getAmazonS3Client.getObject(awsConfig.bucketName, key).getObjectContent
+          s3.getObject(awsConfig.bucketName, key).getObjectContent
         ),
         chunkSize = 1024 * 1024,
       )
@@ -210,7 +200,7 @@ object S3Client {
 
     override def deleteObject(key: String): Stream[F, Unit] =
       Stream.eval(
-        F.delay(transferManager.getAmazonS3Client.deleteObject(awsConfig.bucketName, key))
+        F.delay(s3.deleteObject(awsConfig.bucketName, key))
       )
 
     override def listFiles: Stream[F, String] =
@@ -218,7 +208,7 @@ object S3Client {
         val request = new ListObjectsRequest().withBucketName(awsConfig.bucketName)
         maybeMarker.foreach(request.setMarker)
 
-        val res = transferManager.getAmazonS3Client.listObjects(request)
+        val res = s3.listObjects(request)
         val resultChunk =
           Chunk.seq(res.getObjectSummaries.asScala).map(_.getKey)
         val maybeNextMarker = Option(res.getNextMarker)
@@ -227,15 +217,24 @@ object S3Client {
       }
 
     override def listBuckets: Stream[F, Bucket] =
-      Stream.fromIterator(transferManager.getAmazonS3Client.listBuckets().asScala.iterator, 1024)
+      Stream.fromIterator(s3.listBuckets().asScala.iterator, 1024)
 
-    override def objectUrl(key: String): F[URL] = {
-      val presignedUrlRequest =
-        new GeneratePresignedUrlRequest(awsConfig.bucketName, key)
+    override def generatePresignedUrl(key: String, publicRead: Boolean = false): F[URL] =
+      F.delay {
+        val acl = if (publicRead) CannedAccessControlList.PublicRead.some else None
+        val presignedUrlRequest = new GeneratePresignedUrlRequest(awsConfig.bucketName, key)
           .withMethod(HttpMethod.GET)
           .withExpiration(expireTime())
+        acl
+          .map(_.toString)
+          .foreach(presignedUrlRequest.addRequestParameter(Headers.S3_CANNED_ACL, _))
 
-      F.delay(transferManager.getAmazonS3Client.generatePresignedUrl(presignedUrlRequest))
-    }
+        s3.generatePresignedUrl(presignedUrlRequest)
+      }
+
+    override def generateUrl(key: String): F[URL] =
+      F.delay {
+        s3.getUrl(awsConfig.bucketName, key)
+      }
   }
 }

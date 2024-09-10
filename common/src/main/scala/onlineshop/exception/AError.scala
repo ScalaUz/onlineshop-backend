@@ -1,33 +1,31 @@
 package onlineshop.exception
 
-import java.util.UUID
-
-import io.circe.generic.extras.Configuration
-import io.circe.generic.extras.ConfiguredJsonCodec
-import io.circe.syntax.EncoderOps
-
-@ConfiguredJsonCodec
 sealed trait AError extends Throwable {
   def cause: String
-  override def getMessage: String = s"${AError.Prefix}${(this: AError).asJson}"
+  def errorCode: String
+  override def getMessage: String = cause
 }
 
 object AError {
-  val Prefix: String = "AError: "
-  implicit val config: Configuration = Configuration.default.withDiscriminator("Kind")
-
-  sealed trait ChatError extends AError
-  object ChatError {
-    final case class NotFound(chatId: UUID) extends ChatError {
-      override def cause: String = s"Chat not found by id [$chatId]"
-    }
+  final case class Internal(cause: String) extends AError {
+    override def errorCode: String = "INTERNAL"
+  }
+  final case class NotAllowed(cause: String) extends AError {
+    override def errorCode: String = "NOT_ALLOWED"
+  }
+  final case class BadRequest(cause: String) extends AError {
+    override def errorCode: String = "BAD_REQUEST"
   }
   sealed trait AuthError extends AError
   object AuthError {
-    final case class NoSuchUser(cause: String) extends AuthError
-    final case class InvalidToken(cause: String) extends AuthError
-    final case class AuthenticationException(cause: String) extends AuthError
-    final case class AuthorizationException(cause: String) extends AuthError
-    final case class PasswordDoesNotMatch(cause: String) extends AuthError
+    final case class NoSuchUser(cause: String) extends AuthError {
+      override def errorCode: String = "NOT_FOUND"
+    }
+    final case class InvalidToken(cause: String) extends AuthError {
+      override def errorCode: String = "INVALID_TOKEN"
+    }
+    final case class PasswordDoesNotMatch(cause: String) extends AuthError {
+      override def errorCode: String = "AUTHENTICATION"
+    }
   }
 }

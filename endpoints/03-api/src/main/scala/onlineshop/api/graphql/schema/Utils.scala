@@ -6,14 +6,14 @@ import caliban.schema.Annotations.GQLDirective
 
 import onlineshop.domain.enums.Role
 object Utils {
-  val directiveName = "requiredRole"
-  val attributeName = "role"
+  val directiveName = "requiredPrivilege"
+  val attributeName = "privilege"
 
-  case class Access(role: Role*)
+  case class Authorized(privilege: Role*)
       extends GQLDirective(
         Directive(
           directiveName,
-          Map(attributeName -> StringValue(role.map(_.entryName).mkString(","))),
+          Map(attributeName -> StringValue(privilege.map(_.entryName).mkString(","))),
         )
       )
 }

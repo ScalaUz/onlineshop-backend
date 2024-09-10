@@ -27,12 +27,12 @@ object Dependencies {
     lazy val postgresql = "42.5.4"
     lazy val sangria = "3.5.3"
     lazy val `sangria-circe` = "1.3.2"
-    lazy val caliban = "2.3.1"
+    lazy val caliban = "2.5.1"
+    lazy val chimney = "1.1.0"
     lazy val `tapir-json-circe` = "1.2.11"
     lazy val squants = "1.8.3"
     lazy val awsSdk = "1.12.111"
     lazy val awsSoftwareS3 = "2.20.68"
-    lazy val guava = "31.0.1-jre"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
@@ -48,9 +48,7 @@ object Dependencies {
 
       override def all: Seq[ModuleID] = Seq(awsCore, awsS3, awsSoftwareS3)
     }
-    object google {
-      lazy val guava = "com.google.guava" % "guava" % Versions.guava
-    }
+
     object github {
       object caliban extends LibGroup {
         private def repo(maybeArtifact: Option[String]): ModuleID =
@@ -96,6 +94,9 @@ object Dependencies {
     }
   }
   object io {
+    object scalaland {
+      lazy val chimney: ModuleID = "io.scalaland" %% "chimney" % Versions.chimney
+    }
     object circe extends LibGroup {
       private def circe(artifact: String): ModuleID =
         "io.circe" %% s"circe-$artifact" % Versions.circe

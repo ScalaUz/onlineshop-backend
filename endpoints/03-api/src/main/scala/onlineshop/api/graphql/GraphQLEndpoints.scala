@@ -1,46 +1,63 @@
 package onlineshop.api.graphql
 
 import caliban.GraphQL
-import caliban.RootResolver
-import caliban.graphQL
 import caliban.interop.cats.CatsInterop
 import caliban.interop.cats.implicits._
-import caliban.wrappers.ApolloCaching.apolloCaching
+import caliban.uploads.Uploads
 import caliban.wrappers.DeferSupport
 import caliban.wrappers.Wrappers._
 import cats.effect.Async
 import cats.effect.std.Dispatcher
 import zio.Runtime
+import zio.Unsafe
 import zio.ZEnvironment
 import zio.durationInt
 
 import onlineshop.Algebras
+import onlineshop.algebras._
+import onlineshop.api.graphql.schema.GraphqlApi
+import onlineshop.api.graphql.schema.apis.products.ProductsApi
+import onlineshop.auth.impl.Auth
 import onlineshop.domain.AuthedUser
 
 class GraphQLEndpoints[F[_]: Async](
-    algebras: Algebras[F],
-    maybeUser: Option[AuthedUser],
+    algebras: Algebras[F]
   )(implicit
-    dispatcher: Dispatcher[F]
-  ) extends GraphQLTypes {
-  import auto._
-
-  private lazy val graphQLContext: GraphQLContext =
-    GraphQLContext(authInfo = maybeUser)
+    dispatcher: Dispatcher[F],
+    graphQLContext: GraphQLContext,
+  ) {
+  implicit private val Algebras(
+    auth: Auth[F, Option[AuthedUser]],
+    users: UsersAlgebra[F],
+    assets: AssetsAlgebra[F],
+    brands: BrandsAlgebra[F],
+    categories: CategoriesAlgebra[F],
+    customers: CustomersAlgebra[F],
+    products: ProductsAlgebra[F],
+  ) = algebras
   implicit val runtime: Runtime[GraphQLContext] =
     Runtime.default.withEnvironment(ZEnvironment(graphQLContext))
   implicit val interop: CatsInterop[F, GraphQLContext] =
     CatsInterop.default[F, GraphQLContext](dispatcher)
-  private val query: Queries[F] = Queries.make[F](algebras)
-  private val mutations: Mutations[F] = Mutations.make[F](algebras)
+  implicit val runtimeUpload: Runtime[Uploads] =
+    Unsafe.unsafe { implicit unsafe =>
+      Runtime.unsafe.fromLayer(graphQLContext.uploads)
+    }
+  implicit val interopUploads: CatsInterop[F, Uploads] =
+    CatsInterop.default[F, Uploads](dispatcher)
+  private val apis: List[GraphqlApi.Any[F, Any]] =
+    List(
+      ProductsApi.make[F](products)
+//      new BrandsApi,
+//      new CategoriesApi,
+    )
 
-  def createGraphQL: GraphQL[GraphQLContext] =
-    graphQL(RootResolver(query, mutations)) @@
+  val createGraphQL: GraphQL[GraphQLContext] =
+    apis.map(_.graphql).reduce(_ |+| _) @@
       maxDepth(50) @@
       timeout(3.seconds) @@
       printSlowQueries(500.millis) @@
       authWrapper @@
       DeferSupport.defer @@
-      apolloCaching @@
       printErrors
 }

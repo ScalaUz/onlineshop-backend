@@ -2,12 +2,12 @@ package onlineshop.algebras
 
 import onlineshop.domain.Product
 import onlineshop.repos.ProductsRepository
-trait Products[F[_]] {
+trait ProductsAlgebra[F[_]] {
   def fetchAll: F[List[Product]]
 }
-object Products {
-  def make[F[_]](productsRepository: ProductsRepository[F]): Products[F] =
-    new Products[F] {
+object ProductsAlgebra {
+  def make[F[_]](productsRepository: ProductsRepository[F]): ProductsAlgebra[F] =
+    new ProductsAlgebra[F] {
       override def fetchAll: F[List[Product]] = productsRepository.fetchAll
     }
 }

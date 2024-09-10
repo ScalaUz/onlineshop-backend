@@ -17,16 +17,16 @@ import onlineshop.effects.GenUUID
 import onlineshop.repos.AssetsRepository
 import onlineshop.utils.ID
 
-trait Assets[F[_]] {
+trait AssetsAlgebra[F[_]] {
   def create(assetInfo: AssetInfo, fileKey: NonEmptyString): F[AssetId]
   def uploadFile(parts: Vector[Part[F]]): F[Option[NonEmptyString]]
 }
-object Assets {
+object AssetsAlgebra {
   def make[F[_]: Monad: GenUUID: Calendar: Lambda[M[_] => fs2.Compiler[M, M]]](
       assetsRepository: AssetsRepository[F],
       s3Client: S3Client[F],
-    ): Assets[F] =
-    new Assets[F] {
+    ): AssetsAlgebra[F] =
+    new AssetsAlgebra[F] {
       override def create(assetInfo: AssetInfo, fileKey: NonEmptyString): F[AssetId] =
         for {
           id <- ID.make[F, AssetId]

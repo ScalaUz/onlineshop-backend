@@ -15,17 +15,17 @@ import onlineshop.effects.GenUUID
 import onlineshop.repos.UsersRepository
 import onlineshop.utils.ID
 
-trait Users[F[_]] {
+trait UsersAlgebra[F[_]] {
   def create(userInfo: UserInfo): F[PersonId]
 }
 
-object Users {
+object UsersAlgebra {
   def make[F[_]: Monad: GenUUID: Calendar](
       usersRepository: UsersRepository[F]
     )(implicit
       P: PasswordHasher[F, SCrypt]
-    ): Users[F] =
-    new Users[F] {
+    ): UsersAlgebra[F] =
+    new UsersAlgebra[F] {
       override def create(userInfo: UserInfo): F[PersonId] =
         for {
           id <- ID.make[F, PersonId]

@@ -10,13 +10,15 @@ import onlineshop.domain.args.CategoryInput
 import onlineshop.effects.GenUUID
 import onlineshop.repos.CategoriesRepository
 import onlineshop.utils.ID
-trait Categories[F[_]] {
+trait CategoriesAlgebra[F[_]] {
   def create(categoryInput: CategoryInput): F[CategoryId]
   def fetchAll: F[List[Category]]
 }
-object Categories {
-  def make[F[_]: Monad: GenUUID](categoriesRepository: CategoriesRepository[F]): Categories[F] =
-    new Categories[F] {
+object CategoriesAlgebra {
+  def make[F[_]: Monad: GenUUID](
+      categoriesRepository: CategoriesRepository[F]
+    ): CategoriesAlgebra[F] =
+    new CategoriesAlgebra[F] {
       override def create(categoryInput: CategoryInput): F[CategoryId] =
         for {
           catId <- ID.make[F, CategoryId]

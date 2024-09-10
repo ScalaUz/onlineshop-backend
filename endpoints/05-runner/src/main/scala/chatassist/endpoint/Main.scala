@@ -4,6 +4,7 @@ import cats.effect.ExitCode
 import cats.effect.IO
 import cats.effect.IOApp
 import cats.effect.Resource
+import cats.effect.std.Dispatcher
 import cats.implicits.toTraverseOps
 import chatassist.endpoint.setup.Environment
 import org.typelevel.log4cats.Logger
@@ -16,6 +17,7 @@ object Main extends IOApp {
 
   private def runnable: Resource[IO, List[IO[ExitCode]]] =
     for {
+      implicit0(dispatcher: Dispatcher[IO]) <- Dispatcher.parallel[IO]
       env <- Environment.make[IO]
 
       httpModule <- HttpModule.make[IO](env.toServer)

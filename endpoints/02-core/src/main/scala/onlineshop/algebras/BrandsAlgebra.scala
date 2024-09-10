@@ -10,13 +10,13 @@ import onlineshop.domain.args.BrandInput
 import onlineshop.effects.GenUUID
 import onlineshop.repos.BrandsRepository
 import onlineshop.utils.ID
-trait Brands[F[_]] {
+trait BrandsAlgebra[F[_]] {
   def create(brandInput: BrandInput): F[BrandId]
   def fetchAll: F[List[Brand]]
 }
-object Brands {
-  def make[F[_]: Monad: GenUUID](brandsRepository: BrandsRepository[F]): Brands[F] =
-    new Brands[F] {
+object BrandsAlgebra {
+  def make[F[_]: Monad: GenUUID](brandsRepository: BrandsRepository[F]): BrandsAlgebra[F] =
+    new BrandsAlgebra[F] {
       override def create(brandInput: BrandInput): F[BrandId] =
         for {
           brandId <- ID.make[F, BrandId]

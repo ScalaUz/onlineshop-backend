@@ -35,6 +35,7 @@ lazy val common =
             dev.optics.monocle,
             Dependencies.io.estatico.newtype,
             Dependencies.io.github.jmcardon.`tsec-password`,
+            Dependencies.io.scalaland.chimney,
           )
     )
 
