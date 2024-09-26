@@ -9,8 +9,7 @@ import cats.implicits.toTraverseOps
 import chatassist.endpoint.setup.Environment
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-
-import onlineshop.HttpModule
+import uz.scala.onlineshop.HttpModule
 
 object Main extends IOApp {
   implicit val logger: Logger[IO] = Slf4jLogger.getLogger[IO]

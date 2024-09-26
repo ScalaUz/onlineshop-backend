@@ -3,17 +3,16 @@ package chatassist.endpoint.setup
 import uz.scala.aws.s3.AWSConfig
 import uz.scala.database.MigrationsConfig
 import uz.scala.http4s.HttpServerConfig
+import uz.scala.onlineshop.auth.AuthConfig
 import uz.scala.redis.RedisConfig
 import uz.scala.skunk.DataBaseConfig
-
-import onlineshop.auth.AuthConfig
 
 case class Config(
     http: HttpServerConfig,
     database: DataBaseConfig,
     auth: AuthConfig,
     redis: RedisConfig,
-    awsConfig: AWSConfig,
+    awsConfig: AWSConfig
   ) {
   lazy val migrations: MigrationsConfig = MigrationsConfig(
     hostname = database.host.value,
@@ -22,6 +21,6 @@ case class Config(
     username = database.user.value,
     password = database.password.value,
     schema = "public",
-    location = "db/migration",
+    location = "db/migration"
   )
 }

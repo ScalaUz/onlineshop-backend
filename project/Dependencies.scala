@@ -7,32 +7,32 @@ object Dependencies {
     lazy val http4s = "0.23.10"
     lazy val flyway = "9.16.0"
     lazy val refined = "0.10.2"
-    lazy val cats = "2.9.0"
-    lazy val `cats-effect` = "3.4.8"
-    lazy val logback = "1.4.7"
-    lazy val log4cats = "2.5.0"
+    lazy val cats = "2.12.0"
+    lazy val `cats-effect` = "3.5.4"
+    lazy val logback = "1.5.6"
+    lazy val log4cats = "2.7.0"
     lazy val `mu-rpc` = "0.30.3"
     lazy val pureconfig = "0.17.2"
     lazy val fs2 = "3.6.1"
     lazy val enumeratum = "1.7.3"
     lazy val sttp = "3.7.2"
-    lazy val `http4s-jwt-auth` = "1.2.0"
+    lazy val `http4s-jwt-auth` = "1.2.3"
     lazy val newtype = "0.4.4"
-    lazy val tsec = "0.4.0"
+    lazy val tsec = "0.5.0"
     lazy val monocle = "3.2.0"
     lazy val redis4cats = "1.1.1"
-    lazy val `cats-tagless` = "0.14.0"
-    lazy val mtl = "1.3.0"
+    lazy val `cats-tagless` = "0.16.2"
+    lazy val mtl = "1.4.0"
     lazy val derevo = "0.13.0"
-    lazy val postgresql = "42.5.4"
+    lazy val postgresql = "42.7.3"
     lazy val sangria = "3.5.3"
     lazy val `sangria-circe` = "1.3.2"
     lazy val caliban = "2.5.1"
-    lazy val chimney = "1.1.0"
-    lazy val `tapir-json-circe` = "1.2.11"
+    lazy val chimney = "1.2.0"
+    lazy val `tapir-json-circe` = "1.10.15"
     lazy val squants = "1.8.3"
     lazy val awsSdk = "1.12.111"
-    lazy val awsSoftwareS3 = "2.20.68"
+    lazy val awsSoftwareS3 = "2.25.27"
   }
   trait LibGroup {
     def all: Seq[ModuleID]
@@ -160,14 +160,7 @@ object Dependencies {
       lazy val server = http4s("ember-server")
       lazy val client = http4s("ember-client")
       lazy val circe = http4s("circe")
-      lazy val `blaze-server` = http4s("blaze-server")
       override def all: Seq[ModuleID] = Seq(dsl, server, client, circe)
-    }
-
-    object sangria extends LibGroup {
-      lazy val core = "org.sangria-graphql"  %% "sangria"       % Versions.sangria
-      lazy val circe = "org.sangria-graphql" %% "sangria-circe" % Versions.`sangria-circe`
-      override def all: Seq[ModuleID] = Seq(core, circe)
     }
 
     object flywaydb {
@@ -238,8 +231,8 @@ object Dependencies {
 
   object uz {
     object scala extends LibGroup {
-      lazy val common: ModuleID = "uz.scala" %% "common" % "1.0.1"
-      lazy val skunk: ModuleID = "uz.scala"  %% "skunk"  % "1.0.1"
+      lazy val common: ModuleID = "uz.scala" %% "common" % "1.0.5"
+      lazy val skunk: ModuleID = "uz.scala"  %% "skunk"  % "1.0.5"
       override def all: Seq[ModuleID] = Seq(skunk)
     }
   }

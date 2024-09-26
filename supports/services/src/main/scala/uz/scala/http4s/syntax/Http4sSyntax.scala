@@ -8,7 +8,6 @@ import cats.MonadThrow
 import cats.effect.Temporal
 import cats.effect.kernel.Concurrent
 import cats.implicits._
-import eu.timepit.refined.types.string.NonEmptyString
 import fs2.RaiseThrowable
 import io.circe.Decoder
 import io.circe.Encoder
@@ -16,7 +15,7 @@ import io.circe.syntax.EncoderOps
 import org.http4s._
 import org.http4s.circe._
 import org.http4s.dsl.Http4sDsl
-import org.http4s.headers.Authorization
+import org.http4s.headers.`Accept-Language`
 import org.http4s.headers.`Content-Type`
 import org.http4s.multipart.Part
 import org.http4s.server.websocket.WebSocketBuilder2
@@ -26,11 +25,13 @@ import org.typelevel.log4cats.Logger
 import uz.scala.MultipartDecodeError
 import uz.scala.http4s.utils.MapConvert
 import uz.scala.http4s.utils.MapConvert.ValidationResult
+import uz.scala.onlineshop.Language
+import uz.scala.onlineshop.exception.AError
 import uz.scala.syntax.all.circeSyntaxDecoderOps
 import uz.scala.syntax.all.genericSyntaxGenericTypeOps
 
 trait Http4sSyntax {
-  implicit def http4SyntaxReqOps[F[_]: JsonDecoder: MonadThrow](
+  implicit def http4SyntaxReqOps[F[_]: MonadThrow](
       request: Request[F]
     ): RequestOps[F] =
     new RequestOps(request)
@@ -76,26 +77,33 @@ final class WSOps[F[_]](wsb: WebSocketBuilder2[F])(implicit F: Temporal[F], logg
         },
       )
 }
-final class RequestOps[F[_]: JsonDecoder: MonadThrow](private val request: Request[F])
-    extends Http4sDsl[F] {
-  def decodeR[A: Decoder](
+final class RequestOps[F[_]: MonadThrow](private val request: Request[F]) extends Http4sDsl[F] {
+  implicit def lang: Language =
+    request
+      .headers
+      .get[`Accept-Language`]
+      .map(_.values.head.primaryTag)
+      .flatMap(Language.withNameOption)
+      .getOrElse(Language.En)
+
+  def decodeR[A](
       handle: A => F[Response[F]]
     )(implicit
-      logger: Logger[F],
       decoder: Decoder[A],
+      jsonDecoder: JsonDecoder[F],
     ): F[Response[F]] =
     request
       .asJson
       .map(json => decoder.decodeAccumulating(json.hcursor))
       .flatMap(
         _.fold(
-          error => UnprocessableEntity(error.toList.map(_.getMessage).mkString("\n| ")),
+          { error =>
+            val errors = error.toList.map(_.getMessage).mkString("\n| ")
+            UnprocessableEntity(AError.UnprocessableEntity(errors).json)
+          },
           handle,
         )
       )
-
-  def bearer(token: NonEmptyString): Request[F] =
-    request.putHeaders(Authorization(Credentials.Token(AuthScheme.Bearer, token.value)))
 }
 
 final class PartOps[F[_]](private val parts: Vector[Part[F]]) {
