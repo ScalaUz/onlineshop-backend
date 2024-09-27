@@ -2,7 +2,6 @@ package uz.scala.onlineshop.api.graphql
 
 import caliban.GraphQL
 import caliban.interop.cats.CatsInterop
-import caliban.interop.cats.implicits._
 import caliban.uploads.Uploads
 import caliban.wrappers.DeferSupport
 import caliban.wrappers.Wrappers._
@@ -50,7 +49,7 @@ class GraphQLEndpoints[F[_]: Async](
   private val apis: List[GraphqlApi[F, GraphQLContext]] =
     List(
       ProductsApi
-        .make[F](products)
+        .make[F, GraphQLContext](products)
 //      new BrandsApi,
 //      new CategoriesApi,
     )

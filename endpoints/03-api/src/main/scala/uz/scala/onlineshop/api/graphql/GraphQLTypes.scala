@@ -16,7 +16,7 @@ import uz.scala.onlineshop.domain.products.Product
 import uz.scala.onlineshop.effects.IsUUID
 import uz.scala.syntax.refined._
 
-trait GraphQLTypes extends GenericSchema[GraphQLContext] {
+trait GraphQLTypes[R] extends GenericSchema[R] {
   private def idArgBuilder[ID](implicit uuid: IsUUID[ID]): ArgBuilder[ID] =
     ArgBuilder.uuid.map(uuid.uuid.get)
 
