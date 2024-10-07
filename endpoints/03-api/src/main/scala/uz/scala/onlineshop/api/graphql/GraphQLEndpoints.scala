@@ -13,6 +13,7 @@ import uz.scala.onlineshop.algebras._
 import uz.scala.onlineshop.api.graphql.schema.GraphqlApi
 import uz.scala.onlineshop.api.graphql.schema.apis.brands.BrandsApi
 import uz.scala.onlineshop.api.graphql.schema.apis.categories.CategoriesApi
+import uz.scala.onlineshop.api.graphql.schema.apis.customers.CustomersApi
 import uz.scala.onlineshop.api.graphql.schema.apis.products.ProductsApi
 import uz.scala.onlineshop.auth.impl.Auth
 import uz.scala.onlineshop.domain.AuthedUser
@@ -53,6 +54,7 @@ class GraphQLEndpoints[F[_]: Async](
       ProductsApi.make(products),
       CategoriesApi.make(categories),
       BrandsApi.make(brands),
+      CustomersApi.make(customers),
     )
 
   val createGraphQL: GraphQL[GraphQLContext] =

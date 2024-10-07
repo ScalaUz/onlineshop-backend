@@ -8,10 +8,13 @@ import squants.Money
 import uz.scala.domain.UZS
 import uz.scala.onlineshop.Phone
 import uz.scala.onlineshop.domain._
-import uz.scala.onlineshop.domain.brands.{Brand, BrandInput, BrandUpdateInput}
+import uz.scala.onlineshop.domain.brands.Brand
+import uz.scala.onlineshop.domain.brands.BrandInput
+import uz.scala.onlineshop.domain.brands.BrandUpdateInput
 import uz.scala.onlineshop.domain.categories.Category
 import uz.scala.onlineshop.domain.categories.CategoryInput
 import uz.scala.onlineshop.domain.categories.CategoryUpdateInput
+import uz.scala.onlineshop.domain.customers.Customer
 import uz.scala.onlineshop.domain.customers.CustomerInput
 import uz.scala.onlineshop.domain.customers.CustomerUpdateInput
 import uz.scala.onlineshop.domain.enums.Role
@@ -56,16 +59,20 @@ trait GraphQLTypes[R] extends GenericSchema[R] {
   implicit val personIdSchema: Schema.Typeclass[UserId] = idSchema[UserId]
   implicit val brandIdSchema: Schema.Typeclass[BrandId] = idSchema[BrandId]
   implicit val categoryIdSchema: Schema.Typeclass[CategoryId] = idSchema[CategoryId]
+  implicit val CustomerIdSchema: Schema.Typeclass[CustomerId] = idSchema[CustomerId]
   implicit val countryIdSchema: Schema.Typeclass[CountryId] = idSchema[CountryId]
   implicit val regionIdSchema: Schema.Typeclass[RegionId] = idSchema[RegionId]
   implicit val cityIdSchema: Schema.Typeclass[CityId] = idSchema[CityId]
   implicit val assetIdSchema: Schema.Typeclass[AssetId] = idSchema[AssetId]
   implicit val nonEmptyStringSchema: Schema.Typeclass[NonEmptyString] =
     Schema.stringSchema.contramap[NonEmptyString](identity(_))
+  implicit val PhoneSchema: Schema.Typeclass[Phone] =
+    Schema.stringSchema.contramap[Phone](identity(_))
   implicit val moneySchema: Schema.Typeclass[Money] =
     Schema.bigDecimalSchema.contramap[Money](_.amount)
 
   implicit val productSchema: Schema.Typeclass[Product] = Schema.gen
   implicit val categorySchema: Schema.Typeclass[Category] = Schema.gen
   implicit val BrandSchema: Schema.Typeclass[Brand] = Schema.gen
+  implicit val CustomerSchema: Schema.Typeclass[Customer] = Schema.gen
 }
