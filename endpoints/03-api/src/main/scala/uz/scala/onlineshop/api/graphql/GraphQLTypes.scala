@@ -12,6 +12,7 @@ import uz.scala.onlineshop.domain.brands.Brand
 import uz.scala.onlineshop.domain.brands.BrandInput
 import uz.scala.onlineshop.domain.categories.Category
 import uz.scala.onlineshop.domain.categories.CategoryInput
+import uz.scala.onlineshop.domain.categories.CategoryUpdateInput
 import uz.scala.onlineshop.domain.customers.CustomerInput
 import uz.scala.onlineshop.domain.customers.CustomerUpdateInput
 import uz.scala.onlineshop.domain.enums.Role
@@ -44,6 +45,7 @@ trait GraphQLTypes[R] extends GenericSchema[R] {
   implicit val brandInputArgsBuilder: ArgBuilder[BrandInput] = ArgBuilder.gen
   implicit val productInputArgsBuilder: ArgBuilder[ProductInput] = ArgBuilder.gen
   implicit val customerInputArgsBuilder: ArgBuilder[CustomerInput] = ArgBuilder.gen
+  implicit val categoryUpdateInputArgsBuilder: ArgBuilder[CategoryUpdateInput] = ArgBuilder.gen
   implicit val customerUpdateInputArgsBuilder: ArgBuilder[CustomerUpdateInput] = ArgBuilder.gen
   implicit val productUpdateInputArgsBuilder: ArgBuilder[ProductUpdateInput] = ArgBuilder.gen
 
