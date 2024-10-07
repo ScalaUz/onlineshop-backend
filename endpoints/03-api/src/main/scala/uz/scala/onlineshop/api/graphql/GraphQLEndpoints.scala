@@ -11,6 +11,7 @@ import uz.scala.onlineshop.Algebras
 import uz.scala.onlineshop.Language
 import uz.scala.onlineshop.algebras._
 import uz.scala.onlineshop.api.graphql.schema.GraphqlApi
+import uz.scala.onlineshop.api.graphql.schema.apis.brands.BrandsApi
 import uz.scala.onlineshop.api.graphql.schema.apis.categories.CategoriesApi
 import uz.scala.onlineshop.api.graphql.schema.apis.products.ProductsApi
 import uz.scala.onlineshop.auth.impl.Auth
@@ -49,9 +50,9 @@ class GraphQLEndpoints[F[_]: Async](
   implicit val lang: Language = graphQLContext.language
   private val apis: List[GraphqlApi[F, GraphQLContext]] =
     List(
-      ProductsApi.make[F, GraphQLContext](products),
-      CategoriesApi.make[F, GraphQLContext](categories),
-      //      new BrandsApi,
+      ProductsApi.make(products),
+      CategoriesApi.make(categories),
+      BrandsApi.make(brands),
     )
 
   val createGraphQL: GraphQL[GraphQLContext] =

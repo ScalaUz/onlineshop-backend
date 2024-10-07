@@ -8,8 +8,7 @@ import squants.Money
 import uz.scala.domain.UZS
 import uz.scala.onlineshop.Phone
 import uz.scala.onlineshop.domain._
-import uz.scala.onlineshop.domain.brands.Brand
-import uz.scala.onlineshop.domain.brands.BrandInput
+import uz.scala.onlineshop.domain.brands.{Brand, BrandInput, BrandUpdateInput}
 import uz.scala.onlineshop.domain.categories.Category
 import uz.scala.onlineshop.domain.categories.CategoryInput
 import uz.scala.onlineshop.domain.categories.CategoryUpdateInput
@@ -43,6 +42,7 @@ trait GraphQLTypes[R] extends GenericSchema[R] {
 
   implicit val categoryInputArgsBuilder: ArgBuilder[CategoryInput] = ArgBuilder.gen
   implicit val brandInputArgsBuilder: ArgBuilder[BrandInput] = ArgBuilder.gen
+  implicit val brandUpdateInputArgsBuilder: ArgBuilder[BrandUpdateInput] = ArgBuilder.gen
   implicit val productInputArgsBuilder: ArgBuilder[ProductInput] = ArgBuilder.gen
   implicit val customerInputArgsBuilder: ArgBuilder[CustomerInput] = ArgBuilder.gen
   implicit val categoryUpdateInputArgsBuilder: ArgBuilder[CategoryUpdateInput] = ArgBuilder.gen
