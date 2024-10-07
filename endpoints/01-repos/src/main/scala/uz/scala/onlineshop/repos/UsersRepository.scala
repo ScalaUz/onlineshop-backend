@@ -5,6 +5,8 @@ import cats.effect.Async
 import cats.effect.Resource
 import skunk._
 import uz.scala.onlineshop.EmailAddress
+import uz.scala.onlineshop.Language
+import uz.scala.onlineshop.ResponseMessages.USER_NOT_FOUND
 import uz.scala.onlineshop.domain.UserId
 import uz.scala.onlineshop.exception.AError
 import uz.scala.onlineshop.repos.dto.User
@@ -15,7 +17,7 @@ trait UsersRepository[F[_]] {
   def find(email: EmailAddress): F[Option[User]]
   def create(userAndHash: User): F[Unit]
   def findById(id: UserId): F[Option[User]]
-  def update(id: UserId)(update: User => User): F[Unit]
+  def update(id: UserId)(update: User => User)(implicit lang: Language): F[Unit]
   def delete(id: UserId): F[Unit]
 }
 
@@ -33,10 +35,10 @@ object UsersRepository {
     override def findById(id: UserId): F[Option[User]] =
       UsersSql.findById.queryOption(id)
 
-    override def update(id: UserId)(update: User => User): F[Unit] =
+    override def update(id: UserId)(update: User => User)(implicit lang: Language): F[Unit] =
       OptionT(findById(id))
         .semiflatMap(u => UsersSql.update.execute(update(u)))
-        .getOrRaise(AError.Internal("User not found"))
+        .getOrRaise(AError.Internal(USER_NOT_FOUND(lang)))
 
     override def delete(id: UserId): F[Unit] =
       UsersSql.delete.execute(id)

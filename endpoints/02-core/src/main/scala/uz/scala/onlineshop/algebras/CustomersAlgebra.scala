@@ -3,6 +3,7 @@ package uz.scala.onlineshop.algebras
 import cats.Monad
 import cats.implicits.toFlatMapOps
 import cats.implicits.toFunctorOps
+import uz.scala.onlineshop.Language
 import uz.scala.onlineshop.Phone
 import uz.scala.onlineshop.domain.CustomerId
 import uz.scala.onlineshop.domain.customers.Customer
@@ -18,7 +19,7 @@ trait CustomersAlgebra[F[_]] {
   def create(customerInfo: CustomerInput): F[dto.Customer]
   def findByPhone(phone: Phone): F[Option[dto.Customer]]
   def findById(id: CustomerId): F[Option[dto.Customer]]
-  def update(id: CustomerId, customerUpdate: CustomerUpdateInput): F[Unit]
+  def update(customerUpdate: CustomerUpdateInput)(implicit lang: Language): F[Unit]
   def delete(id: CustomerId): F[Unit]
   def getCustomers: F[List[Customer]]
 }
@@ -48,8 +49,8 @@ object CustomersAlgebra {
       override def findById(id: CustomerId): F[Option[dto.Customer]] =
         customersRepository.findById(id)
 
-      override def update(id: CustomerId, customerUpdate: CustomerUpdateInput): F[Unit] =
-        customersRepository.update(id)(_.copy(name = customerUpdate.name))
+      override def update(customerUpdate: CustomerUpdateInput)(implicit lang: Language): F[Unit] =
+        customersRepository.update(customerUpdate.id)(_.copy(name = customerUpdate.name))
 
       override def delete(id: CustomerId): F[Unit] =
         customersRepository.delete(id)

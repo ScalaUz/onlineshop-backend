@@ -12,14 +12,14 @@ import uz.scala.onlineshop.api.graphql.GraphQLContext
 import uz.scala.onlineshop.api.graphql.GraphQLTypes
 import uz.scala.onlineshop.api.graphql.schema.GraphqlApi
 
-class ProductsApi[F[_]: Dispatcher, R](queries: Queries[F])
+class ProductsApi[F[_]: Dispatcher, R](queries: Queries[F], mutations: Mutations[F])
     extends GraphqlApi[F, R]
        with GraphQLTypes[GraphQLContext] {
   import Schema.auto._
   import caliban.interop.cats.implicits.catsEffectSchema
 
   override def graphql: GraphQL[R] =
-    graphQL(RootResolver(queries))
+    graphQL(RootResolver(queries, mutations))
 }
 
 object ProductsApi {
@@ -30,7 +30,13 @@ object ProductsApi {
     ): GraphqlApi[F, R] =
     new ProductsApi[F, R](
       queries = Queries[F](
-        products = productsAlgebra.fetchAll
-      )
+        products = productsAlgebra.fetchAll,
+        productById = id => productsAlgebra.fetchById(id),
+      ),
+      mutations = Mutations[F](
+        createProduct = productInput => productsAlgebra.create(productInput),
+        updateProduct = productUpdateInput => productsAlgebra.update(productUpdateInput),
+        deleteProduct = id => productsAlgebra.delete(id),
+      ),
     )
 }

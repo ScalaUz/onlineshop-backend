@@ -50,9 +50,22 @@ object ResponseMessages {
     Ru -> "OTP отправлен",
     Uz -> "OTP yuborildi",
   )
-  val GROUPS_CREATED: Map[Language, String] = Map(
-    En -> "Groups created",
-    Ru -> "Группы созданы",
-    Uz -> "Guruhlar yaratildi",
+
+  val PRODUCT_NOT_FOUND: Map[Language, String] = Map(
+    En -> "Product not found",
+    Ru -> "Продукт не найден",
+    Uz -> "Mahsulot topilmadi",
+  )
+
+  val CATEGORY_NOT_FOUND: Map[Language, String] = Map(
+    En -> "Category not found",
+    Ru -> "Категория не найдена",
+    Uz -> "Kategoria topilmadi",
+  )
+
+  val BRAND_NOT_FOUND: Map[Language, String] = Map(
+    En -> "Brand not found",
+    Ru -> "Бренд не найден",
+    Uz -> "Brend topilmadi",
   )
 }

@@ -7,6 +7,7 @@ import cats.implicits.toFunctorOps
 import tsec.passwordhashers.PasswordHasher
 import tsec.passwordhashers.jca.SCrypt
 import uz.scala.onlineshop.EmailAddress
+import uz.scala.onlineshop.Language
 import uz.scala.onlineshop.domain.UserId
 import uz.scala.onlineshop.domain.users.UserInput
 import uz.scala.onlineshop.domain.users.UserUpdateInput
@@ -21,7 +22,7 @@ trait UsersAlgebra[F[_]] {
   def create(userInfo: UserInput): F[UserId]
   def findById(id: UserId): F[Option[dto.User]]
   def findByEmail(email: EmailAddress): F[Option[dto.User]]
-  def update(id: UserId, userUpdate: UserUpdateInput): F[Unit]
+  def update(userUpdate: UserUpdateInput)(implicit lang: Language): F[Unit]
   def delete(id: UserId): F[Unit]
 }
 
@@ -55,8 +56,8 @@ object UsersAlgebra {
       override def findByEmail(email: EmailAddress): F[Option[dto.User]] =
         usersRepository.find(email)
 
-      override def update(id: UserId, userUpdate: UserUpdateInput): F[Unit] =
-        usersRepository.update(id)(_.copy(name = userUpdate.name))
+      override def update(userUpdate: UserUpdateInput)(implicit lang: Language): F[Unit] =
+        usersRepository.update(userUpdate.id)(_.copy(name = userUpdate.name))
 
       override def delete(id: UserId): F[Unit] =
         usersRepository.delete(id)

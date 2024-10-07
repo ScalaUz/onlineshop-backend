@@ -26,8 +26,8 @@ case class Product(
     brandId: BrandId,
     categoryId: CategoryId,
     createdAt: ZonedDateTime,
-    updatedAt: Option[ZonedDateTime],
-    deletedAt: Option[ZonedDateTime],
+    updatedAt: Option[ZonedDateTime] = None,
+    deletedAt: Option[ZonedDateTime] = None,
   ) {
   private def name(implicit lang: Language): NonEmptyString = lang match {
     case Language.En => descriptionEn

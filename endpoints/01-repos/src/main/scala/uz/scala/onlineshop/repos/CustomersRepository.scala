@@ -5,7 +5,9 @@ import cats.effect.Async
 import cats.effect.Resource
 import skunk.Session
 import skunk.Void
+import uz.scala.onlineshop.Language
 import uz.scala.onlineshop.Phone
+import uz.scala.onlineshop.ResponseMessages.USER_NOT_FOUND
 import uz.scala.onlineshop.domain.CustomerId
 import uz.scala.onlineshop.exception.AError
 import uz.scala.onlineshop.repos.dto.Customer
@@ -17,7 +19,7 @@ trait CustomersRepository[F[_]] {
   def find(phone: Phone): F[Option[Customer]]
   def create(customer: Customer): F[Unit]
   def findById(id: CustomerId): F[Option[Customer]]
-  def update(id: CustomerId)(update: Customer => Customer): F[Unit]
+  def update(id: CustomerId)(update: Customer => Customer)(implicit lang: Language): F[Unit]
   def delete(id: CustomerId): F[Unit]
   def getCustomers: F[List[Customer]]
 }
@@ -36,10 +38,16 @@ object CustomersRepository {
     override def findById(id: CustomerId): F[Option[Customer]] =
       CustomersSql.findById.queryOption(id)
 
-    override def update(id: CustomerId)(update: Customer => Customer): F[Unit] =
+    override def update(
+        id: CustomerId
+      )(
+        update: Customer => Customer
+      )(implicit
+        lang: Language
+      ): F[Unit] =
       OptionT(findById(id))
         .semiflatMap(c => CustomersSql.update.execute(update(c)))
-        .getOrRaise(AError.Internal("Customer not found"))
+        .getOrRaise(AError.Internal(USER_NOT_FOUND(lang)))
 
     override def delete(id: CustomerId): F[Unit] =
       CustomersSql.delete.execute(id)
