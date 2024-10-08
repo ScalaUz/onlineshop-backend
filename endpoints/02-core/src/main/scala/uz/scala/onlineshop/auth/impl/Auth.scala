@@ -7,11 +7,10 @@ import cats.data.OptionT
 import cats.effect.Sync
 import cats.effect.std.Random
 import cats.implicits._
-import dev.profunktor.auth.AuthHeaders
+import dev.profunktor.auth.jwt
 import dev.profunktor.auth.jwt.JwtAuth
 import dev.profunktor.auth.jwt.JwtSymmetricAuth
 import dev.profunktor.auth.jwt.JwtToken
-import org.http4s.Request
 import org.typelevel.log4cats.Logger
 import pdi.jwt.JwtAlgorithm
 import tsec.passwordhashers.jca.SCrypt
@@ -50,8 +49,8 @@ trait Auth[F[_], A] {
     ): F[AuthTokens]
   def signup(userInput: CustomerInput)(implicit language: Language): F[AuthTokens]
   def sendOtp(phone: Phone)(implicit language: Language): F[Unit]
-  def destroySession(request: Request[F], login: String): F[Unit]
-  def refresh(request: Request[F])(implicit language: Language): F[AuthTokens]
+  def destroySession(login: String)(implicit jwtToken: Option[jwt.JwtToken]): F[Unit]
+  def refresh(implicit language: Language, jwtToken: Option[jwt.JwtToken]): F[AuthTokens]
 }
 
 object Auth {
@@ -116,11 +115,16 @@ object Auth {
           for {
             otp <- Random[F].betweenInt(1000, 9999).map(_.toString)
 //            _ <- messages.sendSms(otp, phone)
+            _ <- logger.info(s"OTP sent to $phone, otp: $otp")
             _ <- redis.put(s"$OTP_PREFIX:$phone", otp, config.otpExpiration.value)
           } yield {}
         )
 
-      override def refresh(request: Request[F])(implicit language: Language): F[AuthTokens] =
+      override def refresh(
+          implicit
+          language: Language,
+          jwtToken: Option[jwt.JwtToken],
+        ): F[AuthTokens] =
         for {
           refreshToken <- EitherT(
             AuthMiddleware
@@ -135,7 +139,7 @@ object Auth {
                     _ <- redis.del(AuthMiddleware.REFRESH_TOKEN_PREFIX + token.value)
                   } yield {},
               )
-              .apply(request)
+              .apply(jwtToken)
           ).leftMap(AuthError.InvalidToken.apply).rethrowT
 
           tokens <- OptionT(redis.get(refreshToken.value))
@@ -144,9 +148,8 @@ object Auth {
 
         } yield tokens
 
-      override def destroySession(request: Request[F], login: String): F[Unit] =
-        AuthHeaders
-          .getBearerToken(request)
+      override def destroySession(login: String)(implicit jwtToken: Option[jwt.JwtToken]): F[Unit] =
+        jwtToken
           .traverse_(token => redis.del(AuthMiddleware.ACCESS_TOKEN_PREFIX + token.value, login))
 
       private def processCreateToken(user: AuthedUser)(implicit language: Language): F[AuthTokens] =

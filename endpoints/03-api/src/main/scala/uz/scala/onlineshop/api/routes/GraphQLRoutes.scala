@@ -1,7 +1,6 @@
 package uz.scala.onlineshop.api.routes
 
 import java.nio.charset.StandardCharsets
-
 import caliban.CalibanError
 import caliban.CalibanError.ExecutionError
 import caliban.CalibanError.ParsingError
@@ -21,6 +20,7 @@ import cats.effect.std.Dispatcher
 import cats.implicits.toFlatMapOps
 import cats.implicits.toFunctorOps
 import cats.implicits.toTraverseOps
+import dev.profunktor.auth.{AuthHeaders, jwt}
 import org.http4s.AuthedRoutes
 import org.http4s._
 import org.http4s.circe.JsonDecoder
@@ -65,6 +65,7 @@ final class GraphQLRoutes[F[_]: JsonDecoder: Async: Dispatcher](algebras: Algebr
     AuthedRoutes.of[Option[AuthedUser], F] {
       case ar @ POST -> Root as authedUser =>
         implicit val lang: Language = ar.req.lang
+        implicit val token: Option[jwt.JwtToken] = AuthHeaders.getBearerToken(ar.req)
         ar.req.headers.get[`Content-Type`] match {
           case Some(contentType) if contentType.mediaType.isMultipart =>
             ar.req.decode[Multipart[F]] { multipart =>

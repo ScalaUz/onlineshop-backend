@@ -1,13 +1,18 @@
 package uz.scala.onlineshop.api.graphql
 
+import caliban.Value.StringValue
 import caliban.schema.GenericSchema
 import caliban.schema._
 import eu.timepit.refined.types.numeric.NonNegInt
 import eu.timepit.refined.types.string.NonEmptyString
 import squants.Money
 import uz.scala.domain.UZS
+import uz.scala.onlineshop.EmailAddress
 import uz.scala.onlineshop.Phone
 import uz.scala.onlineshop.domain._
+import uz.scala.onlineshop.domain.auth.AuthTokens
+import uz.scala.onlineshop.domain.auth.CustomerCredentials
+import uz.scala.onlineshop.domain.auth.UserCredentials
 import uz.scala.onlineshop.domain.brands.Brand
 import uz.scala.onlineshop.domain.brands.BrandInput
 import uz.scala.onlineshop.domain.brands.BrandUpdateInput
@@ -29,6 +34,8 @@ trait GraphQLTypes[R] extends GenericSchema[R] {
     ArgBuilder.uuid.map(uuid.uuid.get)
 
   implicit val roleArgBuilder: ArgBuilder[Role] = ArgBuilder.gen
+  implicit val emailAddressArgBuilder: ArgBuilder[EmailAddress] =
+    ArgBuilder.string.map(identity(_))
   implicit val nonEmptyStringArgBuilder: ArgBuilder[NonEmptyString] =
     ArgBuilder.string.map(identity(_))
   implicit val NonNegIntArgBuilder: ArgBuilder[NonNegInt] =
@@ -51,8 +58,12 @@ trait GraphQLTypes[R] extends GenericSchema[R] {
   implicit val categoryUpdateInputArgsBuilder: ArgBuilder[CategoryUpdateInput] = ArgBuilder.gen
   implicit val customerUpdateInputArgsBuilder: ArgBuilder[CustomerUpdateInput] = ArgBuilder.gen
   implicit val productUpdateInputArgsBuilder: ArgBuilder[ProductUpdateInput] = ArgBuilder.gen
+  implicit val customerCredentialsArgsBuilder: ArgBuilder[CustomerCredentials] = ArgBuilder.gen
+  implicit val userCredentialsArgsBuilder: ArgBuilder[UserCredentials] = ArgBuilder.gen
 
   // Schemas
+  implicit val UnitSchema: Schema.Typeclass[Unit] =
+    scalarSchema("Unit", None, None, None, _ => StringValue("OK"))
   private def idSchema[ID](implicit uuid: IsUUID[ID]): Schema.Typeclass[ID] =
     Schema.uuidSchema.contramap(uuid.uuid.apply)
   implicit val productIdSchema: Schema.Typeclass[ProductId] = idSchema[ProductId]
@@ -75,4 +86,5 @@ trait GraphQLTypes[R] extends GenericSchema[R] {
   implicit val categorySchema: Schema.Typeclass[Category] = Schema.gen
   implicit val BrandSchema: Schema.Typeclass[Brand] = Schema.gen
   implicit val CustomerSchema: Schema.Typeclass[Customer] = Schema.gen
+  implicit val AuthTokensSchema: Schema.Typeclass[AuthTokens] = Schema.gen
 }

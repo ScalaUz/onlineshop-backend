@@ -2,14 +2,13 @@ package uz.scala.onlineshop
 
 import cats.data.NonEmptyList
 import cats.effect.Async
-import cats.effect.ExitCode
 import cats.effect.kernel.Resource
 import cats.effect.std.Dispatcher
-import cats.implicits.toFunctorOps
 import cats.implicits.toSemigroupKOps
 import org.http4s.HttpRoutes
 import org.http4s.circe.JsonDecoder
 import org.http4s.server.Router
+import org.http4s.server.Server
 import org.typelevel.log4cats.Logger
 import uz.scala.http4s.HttpServer
 import uz.scala.http4s.utils.Routes
@@ -35,8 +34,10 @@ object HttpModule {
       env: Environment[F]
     )(implicit
       logger: Logger[F]
-    ): Resource[F, F[ExitCode]] =
-    HttpServer.make[F](env.config, _ => allRoutes[F](env)).map { _ =>
-      logger.info(s"HTTP server is started").as(ExitCode.Success)
-    }
+    ): Resource[F, Server] =
+    for {
+      _ <- Resource.eval(logger.info(s"Starting HTTP server"))
+      server <- HttpServer.make[F](env.config, _ => allRoutes[F](env))
+      _ <- Resource.eval(logger.info(s"HTTP server started"))
+    } yield server
 }

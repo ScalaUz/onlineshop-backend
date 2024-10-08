@@ -7,10 +7,12 @@ import caliban.wrappers.DeferSupport
 import caliban.wrappers.Wrappers._
 import cats.effect.Async
 import cats.effect.std.Dispatcher
+import dev.profunktor.auth.jwt
 import uz.scala.onlineshop.Algebras
 import uz.scala.onlineshop.Language
 import uz.scala.onlineshop.algebras._
 import uz.scala.onlineshop.api.graphql.schema.GraphqlApi
+import uz.scala.onlineshop.api.graphql.schema.apis.auth.AuthApi
 import uz.scala.onlineshop.api.graphql.schema.apis.brands.BrandsApi
 import uz.scala.onlineshop.api.graphql.schema.apis.categories.CategoriesApi
 import uz.scala.onlineshop.api.graphql.schema.apis.customers.CustomersApi
@@ -49,8 +51,10 @@ class GraphQLEndpoints[F[_]: Async](
     CatsInterop.default[F, Uploads](dispatcher)
 
   implicit val lang: Language = graphQLContext.language
+  implicit val token: Option[jwt.JwtToken] = graphQLContext.jwtToken
   private val apis: List[GraphqlApi[F, GraphQLContext]] =
     List(
+      AuthApi.make(auth),
       ProductsApi.make(products),
       CategoriesApi.make(categories),
       BrandsApi.make(brands),

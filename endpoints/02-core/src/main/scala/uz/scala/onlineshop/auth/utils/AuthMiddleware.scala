@@ -58,15 +58,16 @@ object AuthMiddleware {
           INVALID_TOKEN(language).asLeft[JwtToken]
         }
       }
+
   def getAndValidateJwtToken[F[_]: MonadThrow](
       jwtAuth: JwtSymmetricAuth,
       removeToken: JwtToken => F[Unit],
     )(implicit
       language: Language
-    ): Kleisli[F, Request[F], Either[String, JwtToken]] =
-    Kleisli { request =>
+    ): Kleisli[F, Option[JwtToken], Either[String, JwtToken]] =
+    Kleisli { jwtToken =>
       EitherT
-        .fromOptionF(getBearerToken[F].apply(request), BEARER_TOKEN_NOT_FOUND(language))
+        .fromOption(jwtToken, BEARER_TOKEN_NOT_FOUND(language))
         .flatMapF { token =>
           validateJwtToken(token, jwtAuth, removeToken)
         }
@@ -93,7 +94,11 @@ object AuthMiddleware {
     Kleisli { (req: Request[F]) =>
       implicit val language: Language = req.lang
       OptionT {
-        EitherT(getAndValidateJwtToken[F](jwtAuth, removeToken).apply(req))
+        EitherT(
+          getBearerToken[F]
+            .apply(req)
+            .flatMap(getAndValidateJwtToken[F](jwtAuth, removeToken).apply)
+        )
           .flatMap(getUser)
           .toOption
           .value
