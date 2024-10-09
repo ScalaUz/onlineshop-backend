@@ -39,6 +39,7 @@ class GraphQLEndpoints[F[_]: Async](
     categories: CategoriesAlgebra[F],
     customers: CustomersAlgebra[F],
     products: ProductsAlgebra[F],
+    addresses: AddressesAlgebra[F],
   ) = algebras
   implicit val runtime: Runtime[GraphQLContext] =
     Runtime.default.withEnvironment(ZEnvironment(graphQLContext))
@@ -59,7 +60,7 @@ class GraphQLEndpoints[F[_]: Async](
       ProductsApi.make(products),
       CategoriesApi.make(categories),
       BrandsApi.make(brands),
-      CustomersApi.make(customers),
+      CustomersApi.make,
       UsersApi.make(users),
     )
 

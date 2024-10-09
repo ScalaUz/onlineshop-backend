@@ -9,5 +9,4 @@ case class Customer(
     name: NonEmptyString,
     phone: Phone,
     createdAt: java.time.ZonedDateTime,
-    updatedAt: Option[java.time.ZonedDateTime] = None,
   )

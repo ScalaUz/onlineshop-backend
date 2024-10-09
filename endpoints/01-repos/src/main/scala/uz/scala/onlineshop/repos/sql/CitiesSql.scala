@@ -2,7 +2,8 @@ package uz.scala.onlineshop.repos.sql
 
 import skunk._
 import skunk.implicits._
-import uz.scala.onlineshop.domain.{City, CityId}
+import uz.scala.onlineshop.repos.dto.City
+import uz.scala.onlineshop.domain.CityId
 
 private[repos] object CitiesSql extends Sql[CityId] {
   private val codec: Codec[City] =
@@ -12,4 +13,7 @@ private[repos] object CitiesSql extends Sql[CityId] {
 
   val fetch: Query[Void, City] =
     sql"""SELECT * FROM cities""".query(codec)
+
+  def selectByIds(ids: List[CityId]): Query[ids.type, City] =
+    sql"""SELECT * FROM cities WHERE id IN (${id.values.list(ids)})""".query(codec)
 }

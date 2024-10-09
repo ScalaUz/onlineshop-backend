@@ -1,12 +1,14 @@
 package uz.scala.onlineshop.algebras
 
 import cats.Monad
+import cats.data.NonEmptyList
 import cats.implicits.toFlatMapOps
 import cats.implicits.toFunctorOps
 import uz.scala.onlineshop.Language
 import uz.scala.onlineshop.Phone
 import uz.scala.onlineshop.domain.CustomerId
 import uz.scala.onlineshop.domain.customers.Customer
+import uz.scala.onlineshop.domain.customers.CustomerAddress
 import uz.scala.onlineshop.domain.customers.CustomerInput
 import uz.scala.onlineshop.domain.customers.CustomerUpdateInput
 import uz.scala.onlineshop.effects.Calendar
@@ -22,6 +24,9 @@ trait CustomersAlgebra[F[_]] {
   def update(customerUpdate: CustomerUpdateInput)(implicit lang: Language): F[Unit]
   def delete(id: CustomerId): F[Unit]
   def getCustomers: F[List[Customer]]
+  def getCustomerAddressByIds(
+      ids: NonEmptyList[CustomerId]
+    ): F[Map[CustomerId, List[CustomerAddress]]]
 }
 
 object CustomersAlgebra {
@@ -57,5 +62,12 @@ object CustomersAlgebra {
 
       override def getCustomers: F[List[Customer]] =
         customersRepository.getCustomers.map(_.map(_.toView))
+
+      override def getCustomerAddressByIds(
+          ids: NonEmptyList[CustomerId]
+        ): F[Map[CustomerId, List[CustomerAddress]]] =
+        customersRepository
+          .getCustomersAddresses(ids)
+          .map(_.view.mapValues(_.map(_.toDomain)).toMap)
     }
 }

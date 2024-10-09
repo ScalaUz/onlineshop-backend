@@ -1,8 +1,10 @@
 package uz.scala.onlineshop.repos
 
+import cats.data.NonEmptyList
 import cats.data.OptionT
 import cats.effect.Async
 import cats.effect.Resource
+import cats.implicits.toFunctorOps
 import skunk.Session
 import skunk.Void
 import uz.scala.onlineshop.Language
@@ -11,6 +13,8 @@ import uz.scala.onlineshop.ResponseMessages.USER_NOT_FOUND
 import uz.scala.onlineshop.domain.CustomerId
 import uz.scala.onlineshop.exception.AError
 import uz.scala.onlineshop.repos.dto.Customer
+import uz.scala.onlineshop.repos.dto.CustomerAddress
+import uz.scala.onlineshop.repos.sql.CustomerAddressesSql
 import uz.scala.onlineshop.repos.sql.CustomersSql
 import uz.scala.skunk.syntax.all.skunkSyntaxCommandOps
 import uz.scala.skunk.syntax.all.skunkSyntaxQueryOps
@@ -22,6 +26,9 @@ trait CustomersRepository[F[_]] {
   def update(id: CustomerId)(update: Customer => Customer)(implicit lang: Language): F[Unit]
   def delete(id: CustomerId): F[Unit]
   def getCustomers: F[List[Customer]]
+  def getCustomersAddresses(
+      customerIds: NonEmptyList[CustomerId]
+    ): F[Map[CustomerId, List[CustomerAddress]]]
 }
 
 object CustomersRepository {
@@ -54,5 +61,15 @@ object CustomersRepository {
 
     override def getCustomers: F[List[Customer]] =
       CustomersSql.select.queryList(Void)
+
+    override def getCustomersAddresses(
+        customerIds: NonEmptyList[CustomerId]
+      ): F[Map[CustomerId, List[CustomerAddress]]] = {
+      val listIds = customerIds.toList
+      CustomerAddressesSql
+        .selectByIds(listIds)
+        .queryList(listIds)
+        .map(_.groupBy(_.customerId))
+    }
   }
 }

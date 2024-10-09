@@ -20,6 +20,7 @@ case class Algebras[F[_]](
     categories: CategoriesAlgebra[F],
     customers: CustomersAlgebra[F],
     products: ProductsAlgebra[F],
+    addresses: AddressesAlgebra[F],
   )
 
 object Algebras {
@@ -43,6 +44,7 @@ object Algebras {
       categories = CategoriesAlgebra.make[F](repositories.categories),
       customers = CustomersAlgebra.make[F](repositories.customers),
       products = ProductsAlgebra.make[F](repositories.products),
+      addresses = AddressesAlgebra.make[F](repositories.addresses),
     )
   }
 }
