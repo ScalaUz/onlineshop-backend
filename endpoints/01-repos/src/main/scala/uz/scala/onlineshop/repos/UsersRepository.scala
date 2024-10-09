@@ -17,6 +17,7 @@ trait UsersRepository[F[_]] {
   def find(email: EmailAddress): F[Option[User]]
   def create(userAndHash: User): F[Unit]
   def findById(id: UserId): F[Option[User]]
+  def getUsers: F[List[User]]
   def update(id: UserId)(update: User => User)(implicit lang: Language): F[Unit]
   def delete(id: UserId): F[Unit]
 }
@@ -34,6 +35,9 @@ object UsersRepository {
 
     override def findById(id: UserId): F[Option[User]] =
       UsersSql.findById.queryOption(id)
+
+    override def getUsers: F[List[User]] =
+      UsersSql.select.all
 
     override def update(id: UserId)(update: User => User)(implicit lang: Language): F[Unit] =
       OptionT(findById(id))

@@ -8,6 +8,7 @@ import tsec.passwordhashers.PasswordHasher
 import tsec.passwordhashers.jca.SCrypt
 import uz.scala.onlineshop.EmailAddress
 import uz.scala.onlineshop.Language
+import uz.scala.onlineshop.domain.AuthedUser.User
 import uz.scala.onlineshop.domain.UserId
 import uz.scala.onlineshop.domain.users.UserInput
 import uz.scala.onlineshop.domain.users.UserUpdateInput
@@ -21,6 +22,7 @@ import uz.scala.onlineshop.utils.ID
 trait UsersAlgebra[F[_]] {
   def create(userInfo: UserInput): F[UserId]
   def findById(id: UserId): F[Option[dto.User]]
+  def getUsers: F[List[User]]
   def findByEmail(email: EmailAddress): F[Option[dto.User]]
   def update(userUpdate: UserUpdateInput)(implicit lang: Language): F[Unit]
   def delete(id: UserId): F[Unit]
@@ -53,8 +55,12 @@ object UsersAlgebra {
 
       override def findById(id: UserId): F[Option[dto.User]] =
         usersRepository.findById(id)
+
       override def findByEmail(email: EmailAddress): F[Option[dto.User]] =
         usersRepository.find(email)
+
+      override def getUsers: F[List[User]] =
+        usersRepository.getUsers.map(_.map(_.toDomain))
 
       override def update(userUpdate: UserUpdateInput)(implicit lang: Language): F[Unit] =
         usersRepository.update(userUpdate.id)(_.copy(name = userUpdate.name))

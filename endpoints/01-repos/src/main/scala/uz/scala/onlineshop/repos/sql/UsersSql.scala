@@ -9,6 +9,9 @@ import uz.scala.onlineshop.repos.dto.User
 private[repos] object UsersSql extends Sql[UserId] {
   private val codec = (id *: nes *: email *: hash *: zdt *: zdt.opt *: zdt.opt).to[User]
 
+  val select: Query[Void, User] =
+    sql"""SELECT * FROM users WHERE deleted_at IS NULL""".query(codec)
+
   val findByLogin: Query[EmailAddress, User] =
     sql"""SELECT * FROM users WHERE email = $email LIMIT 1""".query(codec)
 

@@ -17,6 +17,7 @@ import uz.scala.onlineshop.api.graphql.schema.apis.brands.BrandsApi
 import uz.scala.onlineshop.api.graphql.schema.apis.categories.CategoriesApi
 import uz.scala.onlineshop.api.graphql.schema.apis.customers.CustomersApi
 import uz.scala.onlineshop.api.graphql.schema.apis.products.ProductsApi
+import uz.scala.onlineshop.api.graphql.schema.apis.users.UsersApi
 import uz.scala.onlineshop.auth.impl.Auth
 import uz.scala.onlineshop.domain.AuthedUser
 import zio.Runtime
@@ -59,6 +60,7 @@ class GraphQLEndpoints[F[_]: Async](
       CategoriesApi.make(categories),
       BrandsApi.make(brands),
       CustomersApi.make(customers),
+      UsersApi.make(users),
     )
 
   val createGraphQL: GraphQL[GraphQLContext] =
