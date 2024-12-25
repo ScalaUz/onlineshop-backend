@@ -9,6 +9,7 @@ object Dependencies {
     lazy val refined = "0.10.2"
     lazy val cats = "2.12.0"
     lazy val `cats-effect` = "3.5.4"
+    lazy val `cats-retry` = "3.1.3"
     lazy val logback = "1.5.6"
     lazy val log4cats = "2.7.0"
     lazy val `mu-rpc` = "0.30.3"
@@ -33,10 +34,17 @@ object Dependencies {
     lazy val squants = "1.8.3"
     lazy val awsSdk = "1.12.111"
     lazy val awsSoftwareS3 = "2.25.27"
+    lazy val mailer = "1.4.7"
   }
+
   trait LibGroup {
     def all: Seq[ModuleID]
   }
+
+  object javax {
+    lazy val mailer = "javax.mail" % "mail" % Versions.mailer
+  }
+
   object com {
     object amazonaws extends LibGroup {
       private def awsJdk(artifact: String): ModuleID =
@@ -53,12 +61,15 @@ object Dependencies {
       object caliban extends LibGroup {
         private def repo(maybeArtifact: Option[String]): ModuleID =
           "com.github.ghostdogpr" %% s"caliban${maybeArtifact.fold("")(artifact => s"-$artifact")}" % Versions.caliban
+
         lazy val core: ModuleID = repo(None)
         lazy val http4s: ModuleID = repo("http4s".some)
         lazy val cats: ModuleID = repo("cats".some)
         lazy val federation: ModuleID = repo("federation".some)
+
         override def all: Seq[sbt.ModuleID] = Seq(core, http4s, cats, federation)
       }
+
       object pureconfig extends LibGroup {
         private def repo(artifact: String): ModuleID =
           "com.github.pureconfig" %% artifact % Versions.pureconfig
@@ -69,6 +80,7 @@ object Dependencies {
         override def all: Seq[ModuleID] = Seq(core, enumeratum)
       }
     }
+
     object beachape {
       object enumeratum extends LibGroup {
         private def enumeratum(artifact: String): ModuleID =
@@ -77,9 +89,11 @@ object Dependencies {
         lazy val core: ModuleID = enumeratum("enumeratum")
         lazy val circe: ModuleID = enumeratum("enumeratum-circe")
         lazy val cats: ModuleID = enumeratum("enumeratum-cats")
+
         override def all: Seq[ModuleID] = Seq(core, circe, cats)
       }
     }
+
     object softwaremill {
       object sttp extends LibGroup {
         private def sttp(artifact: String): ModuleID =
@@ -89,14 +103,17 @@ object Dependencies {
           "com.softwaremill.sttp.tapir" %% "tapir-json-circe" % Versions.`tapir-json-circe`
         lazy val circe: ModuleID = sttp("circe")
         lazy val `fs2-backend`: ModuleID = sttp("async-http-client-backend-fs2")
+
         override def all: Seq[ModuleID] = Seq(circe, `fs2-backend`, `tapir-circe`)
       }
     }
   }
+
   object io {
     object scalaland {
       lazy val chimney: ModuleID = "io.scalaland" %% "chimney" % Versions.chimney
     }
+
     object circe extends LibGroup {
       private def circe(artifact: String): ModuleID =
         "io.circe" %% s"circe-$artifact" % Versions.circe
@@ -107,9 +124,11 @@ object Dependencies {
       lazy val refined: ModuleID = circe("refined")
       lazy val optics: ModuleID = circe("optics")
       lazy val `generic-extras`: ModuleID = circe("generic-extras")
+
       override def all: Seq[ModuleID] =
         Seq(core, generic, parser, refined, optics, `generic-extras`)
     }
+
     object grpc extends LibGroup {
       private def muRpc(artifact: String): ModuleID =
         "io.higherkindness" %% artifact % Versions.`mu-rpc`
@@ -117,30 +136,37 @@ object Dependencies {
       lazy val service = muRpc("mu-rpc-service")
       lazy val server = muRpc("mu-rpc-server")
       lazy val fs2 = muRpc("mu-rpc-fs2")
+
       override def all: Seq[ModuleID] = Seq(service, server, fs2)
     }
+
     object estatico {
       lazy val newtype = "io.estatico" %% "newtype" % Versions.newtype
     }
+
     object github {
       object jmcardon {
         lazy val `tsec-password` = "io.github.jmcardon" %% "tsec-password" % Versions.tsec
       }
     }
   }
+
   object org {
     lazy val postgresql: ModuleID = "org.postgresql" % "postgresql" % Versions.postgresql
 
     object typelevel {
       object cats {
-        lazy val core = "org.typelevel"           %% "cats-core"           % Versions.cats
-        lazy val effect = "org.typelevel"         %% "cats-effect"         % Versions.`cats-effect`
+        lazy val core = "org.typelevel" %% "cats-core" % Versions.cats
+        lazy val retry: ModuleID = "com.github.cb372" %% "cats-retry" % Versions.`cats-retry`
+        lazy val effect = "org.typelevel" %% "cats-effect" % Versions.`cats-effect`
         lazy val `cats-tagless` = "org.typelevel" %% "cats-tagless-macros" % Versions.`cats-tagless`
-        lazy val `mtl` = "org.typelevel"          %% "cats-mtl"            % Versions.mtl
+        lazy val `mtl` = "org.typelevel" %% "cats-mtl" % Versions.mtl
       }
+
       lazy val log4cats = "org.typelevel" %% "log4cats-slf4j" % Versions.log4cats
-      lazy val squants = "org.typelevel"  %% "squants"        % Versions.squants
+      lazy val squants = "org.typelevel" %% "squants" % Versions.squants
     }
+
     object tpolecat {
       object skunk extends LibGroup {
         private def skunk(artifact: String): ModuleID =
@@ -148,6 +174,7 @@ object Dependencies {
 
         lazy val core = skunk("skunk-core")
         lazy val circe = skunk("skunk-circe")
+
         override def all: Seq[ModuleID] = Seq(core, circe)
       }
     }
@@ -160,6 +187,7 @@ object Dependencies {
       lazy val server = http4s("ember-server")
       lazy val client = http4s("ember-client")
       lazy val circe = http4s("circe")
+
       override def all: Seq[ModuleID] = Seq(dsl, server, client, circe)
     }
 
@@ -167,6 +195,7 @@ object Dependencies {
       lazy val core = "org.flywaydb" % "flyway-core" % Versions.flyway
     }
   }
+
   object eu {
     object timepit {
       object refined extends LibGroup {
@@ -195,6 +224,7 @@ object Dependencies {
 
       lazy val core: ModuleID = fs2("core")
       lazy val io: ModuleID = fs2("io")
+
       override def all: Seq[ModuleID] = Seq(core, io)
     }
   }
@@ -207,14 +237,17 @@ object Dependencies {
 
         lazy val core: ModuleID = derevo("core")
         lazy val cats: ModuleID = derevo("cats")
+
         override def all: Seq[ModuleID] = Seq(core, cats)
       }
     }
   }
+
   object dev {
     object optics {
       lazy val monocle = "dev.optics" %% "monocle-core" % Versions.monocle
     }
+
     object profunktor {
       object redis4cats extends LibGroup {
         private def redis4cats(artifact: String): ModuleID =
@@ -222,8 +255,10 @@ object Dependencies {
 
         lazy val catsEffects: ModuleID = redis4cats("redis4cats-effects")
         lazy val log4cats: ModuleID = redis4cats("redis4cats-log4cats")
+
         override def all: Seq[ModuleID] = Seq(catsEffects, log4cats)
       }
+
       lazy val `http4s-jwt-auth` =
         "dev.profunktor" %% "http4s-jwt-auth" % Versions.`http4s-jwt-auth`
     }
@@ -232,7 +267,8 @@ object Dependencies {
   object uz {
     object scala extends LibGroup {
       lazy val common: ModuleID = "uz.scala" %% "common" % "1.0.5"
-      lazy val skunk: ModuleID = "uz.scala"  %% "skunk"  % "1.0.5"
+      lazy val skunk: ModuleID = "uz.scala" %% "skunk" % "1.0.5"
+
       override def all: Seq[ModuleID] = Seq(skunk)
     }
   }

@@ -3,6 +3,7 @@ package chatassist.endpoint.setup
 import uz.scala.aws.s3.AWSConfig
 import uz.scala.database.MigrationsConfig
 import uz.scala.http4s.HttpServerConfig
+import uz.scala.mailer.MailerConfig
 import uz.scala.onlineshop.auth.AuthConfig
 import uz.scala.redis.RedisConfig
 import uz.scala.skunk.DataBaseConfig
@@ -12,7 +13,8 @@ case class Config(
     database: DataBaseConfig,
     auth: AuthConfig,
     redis: RedisConfig,
-    awsConfig: AWSConfig
+    awsConfig: AWSConfig,
+    mailer: MailerConfig,
   ) {
   lazy val migrations: MigrationsConfig = MigrationsConfig(
     hostname = database.host.value,
@@ -21,6 +23,6 @@ case class Config(
     username = database.user.value,
     password = database.password.value,
     schema = "public",
-    location = "db/migration"
+    location = "db/migration",
   )
 }

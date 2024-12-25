@@ -6,12 +6,13 @@ services:
     container_name: nginx
     volumes:
       - ./configs:/etc/nginx/conf.d
-    ports:
-      - "80:80"
-      - "443:443"
-    networks:
-      - external-net
-networks:
-  external-net:
-    name: external-net
-    external: true
+    network_mode: host
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    networks:
+#      - external-net
+#networks:
+#  external-net:
+#    name: external-net
+#    external: true

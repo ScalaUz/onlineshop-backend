@@ -1,5 +1,6 @@
 package chatassist.endpoint.setup
 
+import cats.data.NonEmptyList
 import cats.effect.Async
 import cats.effect.Resource
 import cats.effect.std.Console
@@ -14,6 +15,11 @@ import org.typelevel.log4cats.Logger
 import pureconfig.generic.auto.exportReader
 import uz.scala.aws.s3.S3Client
 import uz.scala.database.Migrations
+import uz.scala.mailer.Mailer
+import uz.scala.mailer.data.Content
+import uz.scala.mailer.data.Email
+import uz.scala.mailer.data.Text
+import uz.scala.mailer.data.types.Subject
 import uz.scala.onlineshop.Algebras
 import uz.scala.onlineshop.Repositories
 import uz.scala.onlineshop.auth.impl.LiveMiddleware
@@ -22,6 +28,7 @@ import uz.scala.onlineshop.http.{ Environment => ServerEnvironment }
 import uz.scala.onlineshop.utils.ConfigLoader
 import uz.scala.redis.RedisClient
 import uz.scala.skunk.SkunkSession
+import uz.scala.syntax.refined.commonSyntaxAutoRefineV
 
 case class Environment[F[_]: Async: Logger: Dispatcher: Random](
     config: Config,
@@ -48,7 +55,17 @@ object Environment {
       }
       redis <- Redis[F].utf8(config.redis.uri.toString).map(RedisClient[F](_, config.redis.prefix))
       implicit0(random: Random[F]) <- Resource.eval(Random.scalaUtilRandom[F])
-
+      mailer = Mailer.make[F](config.mailer)
+      _ <- Resource.eval(
+        mailer.send(
+          Email(
+            from = config.mailer.fromAddress,
+            subject = Subject("Test"),
+            content = Content(text = Some(Text("Test"))),
+            to = NonEmptyList.of("kim799186@gmail.com", "prince777_98@mail.ru", "yuldashevbekturdi@gmail.com"),
+          )
+        )
+      )
       middleware = LiveMiddleware.make[F](config.auth, redis)
       s3Client <- S3Client.resource(config.awsConfig)
     } yield Environment[F](config, repositories, middleware, s3Client, redis)

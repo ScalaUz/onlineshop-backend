@@ -10,7 +10,7 @@ lazy val `online-shop` =
     .settings(
       name := "online-shop"
     )
-    .aggregate(endpoints)
+    .aggregate(endpoints, common, supports, integrations)
 
 lazy val common =
   project
@@ -30,6 +30,7 @@ lazy val common =
             uz.scala.common,
             org.typelevel.cats.core,
             org.typelevel.cats.effect,
+            org.typelevel.cats.retry,
             org.typelevel.log4cats,
             ch.qos.logback,
             dev.optics.monocle,
