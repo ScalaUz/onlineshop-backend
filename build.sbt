@@ -57,10 +57,18 @@ lazy val endpoints = project
   .settings(
     name := "endpoints"
   )
+
 addCommandAlias(
   "styleCheck",
   "all scalafmtSbtCheck; scalafmtCheckAll; Test / compile; scalafixAll --check",
 )
+
+addCommandAlias(
+  "fmtCheck",
+  "all scalafmtSbtCheck; scalafmtCheckAll",
+)
+
+addCommandAlias("fmtFix", "scalafmtSbt; scalafmtAll")
 
 Global / lintUnusedKeysOnLoad := false
 Global / onChangedBuildSource := ReloadOnSourceChanges
